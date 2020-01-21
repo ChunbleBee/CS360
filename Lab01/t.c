@@ -73,7 +73,7 @@ int C(int x, int y)
     int n = 0;
     while (p != stkptr && p != 0 && n < 128) {
         printf("Address: %x --> \tInt Rep: %i\n", p, *p);
-        printf("\t\t\tChar Rep: %c\n\t\t\tHex Rep: %x\n", *p, *p);
+        printf("\t\t\tHex Rep: %x\n", *p, *p);
         p++;
         n++;
     }
