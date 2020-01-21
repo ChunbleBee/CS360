@@ -47,35 +47,35 @@ int B(int x, int y)
 
 int C(int x, int y)
 {
-    int u, v, w, i, *p;
-
+    int u = 10, v = 11, w = 12, i = 13, * p;
+    
     printf("enter C\n");
+
     // write C cdoe to PRINT ADDRESS OF u,v,w,i,p;
     printf("Addresses of...\n\tu = %x\n\tv = %x\n\tw = %x\n\ti = %x\n\t&p = %x\n\tp = %x\n", &u, &v, &w, &i, &p, p);
     //Added the derefed address of p and the add. it's pointing to. FOR SHOVELRY!! :D
 
-    u=10; v=11; w=12; i=13;
-
-    FP = (int *)getebp();  // FP = stack frame pointer of the C() function
+    FP = (int *) getebp();  // FP = stack frame pointer of the C() function
     
     // (2). Write C code to print the stack frame link list.
     int * stkptr = FP;
-    printf("Printing the call-stack addresses!!! :D\n");
-    while(stkptr != 0) {
-        printf(">> New Call Stack Frame <<\n");
-        printf("\tCurrent: %x, Next: %x\n", stkptr, *stkptr);
-        stkptr = *stkptr;
 
-        p = stkptr - 1;
-        /* (3). Print the stack contents from p to the frame of main()
-            YOU MAY JUST PRINT 128 entries of the stack contents. */
-        printf("Printing all stack contents!!\n");
-        int n = 0;
-        while(n < 128){
-            printf("Address: %x -->\tDecimal Content: %i\n\t\t\tCharacter Content: %c\n", p, *p, *p);
-            p -= 1;
-            n++;
-        }
+    printf("Printing the call-stack addresses!!! :D\n");
+    while (stkptr != 0) {
+        printf(">> New Call Stack Frame <<\n\tCurrent: %x\n\tNext: %x\n", stkptr, *stkptr);
+        stkptr = *stkptr;
+    }
+    printf("\n");
+
+    p = (int *)&p;
+    /* (3). Print the stack contents from p to the frame of main()
+        YOU MAY JUST PRINT 128 entries of the stack contents.*/
+    int n = 0;
+    while (p != stkptr && p != 0 && n < 128) {
+        printf("Address: %x --> \tInt Rep: %i\n", p, *p);
+        printf("\t\t\tChar Rep: %c\n\t\t\tHex Rep: %x\n", *p, *p);
+        p++;
+        n++;
     }
     /* (4). On a hard copy of the print out, identify the stack contents
         as LOCAL VARIABLES, PARAMETERS, stack frame pointer of each function. */
