@@ -65,7 +65,7 @@ P03: 478
 P04: 494
 */
 
-void print_partition_info(Partition * part, int prev_sector) {
+void print_partition_info(Partition * part, int sector) {
     printf("  \
 Drive:              %i\n  \
 System Type:        %x\n  \
@@ -77,30 +77,30 @@ Starting Sector:    %i\n  \
 Ending Sector:      %i\n  \
 Starting Cylinder:  %i\n  \
 Ending Cylinder:    %i\n\n",
-    part->head,
+    part->drive,
     part->sys_type,
     part->nr_sectors,
-    part->start_sector + prev_sector,
+    part->start_sector + sector,
     part->head,
     part->end_head,
-    part->sector,
-    part->end_sector,
+    part->sector + sector,
+    part->end_sector + sector,
     part->cylinder,
     part->end_cylinder);
 }
 
-void list_partitions(int fd, int sector, int prev_sector, char *buffer) {
-    read_sector(fd, sector + prev_sector, buffer);
+void list_partitions(int fd, int sector, char *buffer) {
+    read_sector(fd, sector, buffer);
     //printf("RECURSED!!!\n");
     
     for (int i = 0; i < 4; ++i){
         Partition * part = (Partition *)&buffer[446 + (i*16)];
 
         if (part->nr_sectors > 0) {
-            print_partition_info(part, prev_sector);
+            print_partition_info(part, sector);
 
-            if (part->sys_type == 5 || part->sys_type == 15) {
-                list_partitions(fd, part->start_sector, sector + prev_sector, buffer);
+            if (part->sys_type == 5 || part->sys_type == 15){
+                list_partitions(fd, part->start_sector, buffer);
             }
         }
     }
@@ -109,6 +109,6 @@ void list_partitions(int fd, int sector, int prev_sector, char *buffer) {
 int main() {
     int fd = open("vdisk", O_RDONLY);
     printf("File Disk: %d\n", fd);
-    list_partitions(fd, 0, 0, buffer);
+    list_partitions(fd, 0, buffer);
 }
 
