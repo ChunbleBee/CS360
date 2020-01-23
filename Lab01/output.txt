@@ -10,7 +10,7 @@ File Disk: 3
   Starting Cylinder:  0
   Ending Cylinder:    0
 
-  Drive:              5
+  Drive:              0
   System Type:        83
   Sector Count:       360
   First Sector:       360
@@ -21,7 +21,7 @@ File Disk: 3
   Starting Cylinder:  0
   Ending Cylinder:    0
 
-  Drive:              11
+  Drive:              0
   System Type:        c
   Sector Count:       720
   First Sector:       720
@@ -32,7 +32,7 @@ File Disk: 3
   Starting Cylinder:  0
   Ending Cylinder:    0
 
-  Drive:              22
+  Drive:              0
   System Type:        5
   Sector Count:       1440
   First Sector:       1440
@@ -43,91 +43,25 @@ File Disk: 3
   Starting Cylinder:  0
   Ending Cylinder:    0
 
-  Drive:              23
+  Drive:              0
   System Type:        6
   Sector Count:       342
-  First Sector:       18
+  First Sector:       1458
   Starting Head:      23
   Ending Head:        28
-  Starting Sector:    10
-  Ending Sector:      36
+  Starting Sector:    1450
+  Ending Sector:      1476
   Starting Cylinder:  0
   Ending Cylinder:    0
 
-  Drive:              28
+  Drive:              0
   System Type:        5
   Sector Count:       523
-  First Sector:       377
+  First Sector:       1817
   Starting Head:      28
   Ending Head:        37
-  Starting Sector:    54
-  Ending Sector:      9
-  Starting Cylinder:  0
-  Ending Cylinder:    0
-
-  Drive:              28
-  System Type:        82
-  Sector Count:       522
-  First Sector:       1441
-  Starting Head:      28
-  Ending Head:        37
-  Starting Sector:    55
-  Ending Sector:      9
-  Starting Cylinder:  0
-  Ending Cylinder:    0
-
-  Drive:              37
-  System Type:        5
-  Sector Count:       523
-  First Sector:       2357
-  Starting Head:      37
-  Ending Head:        45
-  Starting Sector:    27
-  Ending Sector:      45
-  Starting Cylinder:  0
-  Ending Cylinder:    0
-
-  Drive:              0
-  System Type:        0
-  Sector Count:       0
-  First Sector:       1440
-  Starting Head:      0
-  Ending Head:        0
-  Starting Sector:    0
-  Ending Sector:      0
-  Starting Cylinder:  0
-  Ending Cylinder:    0
-
-  Drive:              0
-  System Type:        0
-  Sector Count:       0
-  First Sector:       1440
-  Starting Head:      0
-  Ending Head:        0
-  Starting Sector:    0
-  Ending Sector:      0
-  Starting Cylinder:  0
-  Ending Cylinder:    0
-
-  Drive:              0
-  System Type:        0
-  Sector Count:       0
-  First Sector:       0
-  Starting Head:      0
-  Ending Head:        0
-  Starting Sector:    0
-  Ending Sector:      0
-  Starting Cylinder:  0
-  Ending Cylinder:    0
-
-  Drive:              0
-  System Type:        0
-  Sector Count:       0
-  First Sector:       0
-  Starting Head:      0
-  Ending Head:        0
-  Starting Sector:    0
-  Ending Sector:      0
+  Starting Sector:    1494
+  Ending Sector:      1449
   Starting Cylinder:  0
   Ending Cylinder:    0
 

@@ -106,7 +106,7 @@ void list_partitions(int fd, int sector, char *buffer) {
     }
 }
 
-int main() {
+int main(int argc, char *argv[], char *env[]) {
     int fd = open("vdisk", O_RDONLY);
     printf("File Disk: %d\n", fd);
     list_partitions(fd, 0, buffer);
