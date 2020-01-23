@@ -91,15 +91,14 @@ void myprintf(char * str, ...) {
             s_index += s_index_add;
         } else {
             putchar(str[s_index]);
-            if (str[s_index] == '\n') putchar('\r');
+            if (str[s_index] == '\n') { putchar('\r'); };
             s_index++;
         }
     }
-    putchar('\n');
 }
 
 int main(int argc, char *argv[], char *env[]) {
-    prints("Shobe doobee\ndoowop bang boom!\n");
+    prints("Shoobee doobee\ndoowop bang boom!\n");
     myprintf("cha=%c string=%s\
     dec=%d hex=%x oct=%o neg=%d\n", 
         'A',
@@ -110,10 +109,10 @@ int main(int argc, char *argv[], char *env[]) {
         -100);
     myprintf("Number of CMD line args (argc): %u\n", argc);
     for(int i = 0; i < argc; i++) {
-        myprintf("Cmd line arg %i = %s\n", argv[i]);
+        myprintf("Cmd line arg #%d = %s\n", i, argv[i]);
     }
     myprintf("\n");
     for(int i = 0; env[i] != NULL; i++){
-        myprintf("Env. Var. #%u = %s", i, env[i]);
+        myprintf("Env. Var. #%u: %s\n", i, env[i]);
     }
 }
