@@ -51,33 +51,36 @@ int write_sector(int fd, int sector, char *buf)
   return n;
 }
 
-int main() {
-    int fd = open("vdisk", O_RDONLY);
-    printf("File Disk: %d\n", fd);
+/*
+Master Boot Record Partition Info Tables:
+P01: Byte - 446, Sector - 0
+P02: 462
+p03: 478
+p04: 494
 
-    read_sector(fd, 0, buffer);
+Extended Boot Record Partition Info Tables:
+P01: Byte 446, Sector - First Sector of Partition
+P02: 462
+P03: 478
+P04: 494
+*/
 
-    Partition * part = (Partition *)&buffer[494];
-    /*
-    P01: Byte 446
-    P02: 462
-    p03: 478
-    p04: 494
-    */
-
-    printf(
-"  Drive:              %i\n\
-  System Type:        %i\n\
-  Sector Count:       %i\n\
-  Staring Head:       %i\n\
-  Ending Head:        %i\n\
-  Starting Sector:    %i\n\
-  Ending Sector:      %i\n\
-  Starting Cylinder:  %i\n\
-  Ending Cylinder:    %i\n",
+void print_partition_info(Partition * part, int prev_sector) {
+    printf("  \
+Drive:              %i\n  \
+System Type:        %x\n  \
+Sector Count:       %i\n  \
+First Sector:       %i\n  \
+Starting Head:      %i\n  \
+Ending Head:        %i\n  \
+Starting Sector:    %i\n  \
+Ending Sector:      %i\n  \
+Starting Cylinder:  %i\n  \
+Ending Cylinder:    %i\n\n",
     part->head,
     part->sys_type,
     part->nr_sectors,
+    part->start_sector + prev_sector,
     part->head,
     part->end_head,
     part->sector,
@@ -85,3 +88,27 @@ int main() {
     part->cylinder,
     part->end_cylinder);
 }
+
+void list_partitions(int fd, int sector, int prev_sector, char *buffer) {
+    read_sector(fd, sector + prev_sector, buffer);
+    //printf("RECURSED!!!\n");
+    
+    for (int i = 0; i < 4; ++i){
+        Partition * part = (Partition *)&buffer[446 + (i*16)];
+
+        if (part->nr_sectors > 0) {
+            print_partition_info(part, prev_sector);
+
+            if (part->sys_type == 5 || part->sys_type == 15) {
+                list_partitions(fd, part->start_sector, sector + prev_sector, buffer);
+            }
+        }
+    }
+}
+
+int main() {
+    int fd = open("vdisk", O_RDONLY);
+    printf("File Disk: %d\n", fd);
+    list_partitions(fd, 0, 0, buffer);
+}
+

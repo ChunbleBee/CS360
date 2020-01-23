@@ -1,0 +1,133 @@
+File Disk: 3
+  Drive:              0
+  System Type:        7
+  Sector Count:       342
+  First Sector:       18
+  Starting Head:      0
+  Ending Head:        5
+  Starting Sector:    19
+  Ending Sector:      45
+  Starting Cylinder:  0
+  Ending Cylinder:    0
+
+  Drive:              5
+  System Type:        83
+  Sector Count:       360
+  First Sector:       360
+  Starting Head:      5
+  Ending Head:        11
+  Starting Sector:    46
+  Ending Sector:      27
+  Starting Cylinder:  0
+  Ending Cylinder:    0
+
+  Drive:              11
+  System Type:        c
+  Sector Count:       720
+  First Sector:       720
+  Starting Head:      11
+  Ending Head:        22
+  Starting Sector:    28
+  Ending Sector:      54
+  Starting Cylinder:  0
+  Ending Cylinder:    0
+
+  Drive:              22
+  System Type:        5
+  Sector Count:       1440
+  First Sector:       1440
+  Starting Head:      22
+  Ending Head:        45
+  Starting Sector:    55
+  Ending Sector:      45
+  Starting Cylinder:  0
+  Ending Cylinder:    0
+
+  Drive:              23
+  System Type:        6
+  Sector Count:       342
+  First Sector:       18
+  Starting Head:      23
+  Ending Head:        28
+  Starting Sector:    10
+  Ending Sector:      36
+  Starting Cylinder:  0
+  Ending Cylinder:    0
+
+  Drive:              28
+  System Type:        5
+  Sector Count:       523
+  First Sector:       377
+  Starting Head:      28
+  Ending Head:        37
+  Starting Sector:    54
+  Ending Sector:      9
+  Starting Cylinder:  0
+  Ending Cylinder:    0
+
+  Drive:              28
+  System Type:        82
+  Sector Count:       522
+  First Sector:       1441
+  Starting Head:      28
+  Ending Head:        37
+  Starting Sector:    55
+  Ending Sector:      9
+  Starting Cylinder:  0
+  Ending Cylinder:    0
+
+  Drive:              37
+  System Type:        5
+  Sector Count:       523
+  First Sector:       2357
+  Starting Head:      37
+  Ending Head:        45
+  Starting Sector:    27
+  Ending Sector:      45
+  Starting Cylinder:  0
+  Ending Cylinder:    0
+
+  Drive:              0
+  System Type:        0
+  Sector Count:       0
+  First Sector:       1440
+  Starting Head:      0
+  Ending Head:        0
+  Starting Sector:    0
+  Ending Sector:      0
+  Starting Cylinder:  0
+  Ending Cylinder:    0
+
+  Drive:              0
+  System Type:        0
+  Sector Count:       0
+  First Sector:       1440
+  Starting Head:      0
+  Ending Head:        0
+  Starting Sector:    0
+  Ending Sector:      0
+  Starting Cylinder:  0
+  Ending Cylinder:    0
+
+  Drive:              0
+  System Type:        0
+  Sector Count:       0
+  First Sector:       0
+  Starting Head:      0
+  Ending Head:        0
+  Starting Sector:    0
+  Ending Sector:      0
+  Starting Cylinder:  0
+  Ending Cylinder:    0
+
+  Drive:              0
+  System Type:        0
+  Sector Count:       0
+  First Sector:       0
+  Starting Head:      0
+  Ending Head:        0
+  Starting Sector:    0
+  Ending Sector:      0
+  Starting Cylinder:  0
+  Ending Cylinder:    0
+
