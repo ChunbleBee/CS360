@@ -70,37 +70,28 @@ void print_partition_info(Partition * part, int sector) {
 Drive:              %i\n  \
 System Type:        %x\n  \
 Sector Count:       %i\n  \
-First Sector:       %i\n  \
-Starting Head:      %i\n  \
-Ending Head:        %i\n  \
 Starting Sector:    %i\n  \
-Ending Sector:      %i\n  \
-Starting Cylinder:  %i\n  \
-Ending Cylinder:    %i\n\n",
+Ending Sector:      %i\n  \n",
     part->drive,
     part->sys_type,
     part->nr_sectors,
     part->start_sector + sector,
-    part->head,
-    part->end_head,
-    part->sector + sector,
-    part->end_sector + sector,
-    part->cylinder,
-    part->end_cylinder);
+    part->start_sector + part->nr_sectors + sector - 1);
 }
 
 void list_partitions(int fd, int sector, char *buffer) {
     read_sector(fd, sector, buffer);
     //printf("RECURSED!!!\n");
     
-    for (int i = 0; i < 4; ++i){
-        Partition * part = (Partition *)&buffer[446 + (i*16)];
-
+    for (int i = 0; i < 4; i++){
+        Partition * part = (Partition *)&buffer[0x1BE + (i*16)];
+        //printf("nr_sectors: %d\n", part->nr_sectors);
         if (part->nr_sectors > 0) {
             print_partition_info(part, sector);
 
-            if (part->sys_type == 5 || part->sys_type == 15){
-                list_partitions(fd, part->start_sector, buffer);
+            if (part->sys_type == 5){
+                list_partitions(fd, sector + part->start_sector, buffer);
+                read_sector(fd, sector, buffer);
             }
         }
     }

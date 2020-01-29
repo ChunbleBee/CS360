@@ -29,8 +29,7 @@ void printnum(u32 n, int base) {
     (n == 0) ? putchar('0') : rpu(n, base);
 }
 
-int printu(u32 n)
-{
+int printu(u32 n) {
     (n == 0) ? putchar('0') : rpu(n, 10);
 }
 
