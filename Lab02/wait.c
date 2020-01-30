@@ -92,10 +92,16 @@ int kexit(int value)
   5)  Wake up parent and, if needed, also
         the init process of Process 01.
   */
-  memset(running->kstack, 0, sizeof(int) * SSIZE);
+
+  // #TODO: Fix memset() s.t. it doesn't cause a segfault.
+  //memset(running->kstack,0, sizeof(running->kstack));
   PROC * child = proc[1].child;
   if (child != NULL) {
-    child->next = running->child;
+    while (child->sibling != NULL){
+      child = child->sibling;
+    }
+    child->sibling = running->child;
+
   } else {
     // Theorhetically, this should never happen,
     // but ehhhhhhhhhh
@@ -116,10 +122,11 @@ int kwait(int *status)
   while (next != NULL) {
     if (next->status == ZOMBIE) {
       int pid = next->pid;
-      *status = pid;
+      (*status) = pid;
       enqueue(&freeList, next);
       return pid;
     }
+    next = next->sibling;
   }
   return -1;
 }
@@ -127,10 +134,10 @@ int kwait(int *status)
 // 4. Add a "wait" command to let proc wait for ZOMBIE child
 int do_wait() {
   printList("freeList", freeList);
-  int * status;
-  kwait(status);
-  printf("proc %d waited for a ZOMBIE child process %d with exit status %d",
+  int status = 0;
+  int pid = kwait(&status);
+  printf("proc %d waited for a ZOMBIE child process %d with exit status %d\n",
     running->pid,
-    *status,
-    *status);
+    pid,
+    status);
 }

@@ -13,10 +13,6 @@ int body()
   while(1){
     printf("***************************************\n");
     printf("proc %d running: Parent=%d\n", running->pid, running->ppid);
-
-    printList("freeList ", freeList);
-    printList("readQueue", readyQueue);
-    
     printf("input a command: [ps|fork|switch|exit|wait] : ");
     fgets(command, 64, stdin);
     command[strlen(command)-1] = 0;
@@ -81,6 +77,7 @@ int do_exit()
   }
   printf("proc %d in do_exit(), enter an exit value : ", running->pid);
   scanf("%d", &value);
+  getchar();
   kexit(value);
 }
 
