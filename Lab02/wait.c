@@ -78,6 +78,7 @@ int kwakeup(int event)
       sleep->status = READY;
       enqueue(&readyQueue, sleep);
     }
+    sleep = sleep->next;
   }
 }
 
@@ -101,7 +102,11 @@ int kexit(int value)
       child = child->sibling;
     }
     child->sibling = running->child;
-
+    child = child->sibling;
+    while (child != NULL) {
+      child->ppid = 1;
+      child = child->sibling;
+    }
   } else {
     // Theorhetically, this should never happen,
     // but ehhhhhhhhhh
@@ -110,24 +115,35 @@ int kexit(int value)
 
   running->exitCode = value;
   running->status = ZOMBIE;
-  kwakeup(running->parent);
+  kwakeup(ZOMBIE);
   tswitch();
 }
 
 // 3. Implement kwait() per the algorithm in 3.5.3
 int kwait(int *status)
 {
-  PROC * next = running->child;
+  PROC * next = running->child, * prev = NULL;
   
   while (next != NULL) {
     if (next->status == ZOMBIE) {
       int pid = next->pid;
-      (*status) = pid;
+
+      next->ppid = 0;
+      next->status = FREE;
+      (*status) = next->exitCode;
+
+      if (prev != NULL) {
+        prev->sibling = next->sibling;
+      } else {
+        running->child = next->sibling;
+      }
+
       enqueue(&freeList, next);
       return pid;
     }
     next = next->sibling;
   }
+  ksleep(ZOMBIE);
   return -1;
 }
 

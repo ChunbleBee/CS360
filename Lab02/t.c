@@ -12,11 +12,12 @@ int body()
   printf("proc %d resume to body()\n", running->pid);
   while(1){
     printf("***************************************\n");
-    printf("proc %d running: Parent=%d\n", running->pid, running->ppid);
+    printf("-- Process %d executing --\n\tParent Process: %d\n\n", running->pid, running->ppid);
     printf("input a command: [ps|fork|switch|exit|wait] : ");
     fgets(command, 64, stdin);
     command[strlen(command)-1] = 0;
-     
+    printf("\n");
+    
     if (!strcmp(command, "ps"))
       do_ps();
     else if (!strcmp(command, "fork"))
