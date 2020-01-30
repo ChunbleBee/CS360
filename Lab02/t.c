@@ -1,10 +1,6 @@
 /*********** A Multitasking System ************/
-#include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
 
-#include "type.h"
-#include "queue.c"
 #include "wait.c"
 
 PROC proc[NPROC], *running, *freeList, *readyQueue;
@@ -21,7 +17,7 @@ int body()
     printList("freeList ", freeList);
     printList("readQueue", readyQueue);
     
-    printf("input a command: [ps|fork|switch|exit] : ");
+    printf("input a command: [ps|fork|switch|exit|wait] : ");
     fgets(command, 64, stdin);
     command[strlen(command)-1] = 0;
      
@@ -33,6 +29,8 @@ int body()
       do_switch();
     else if (!strcmp(command, "exit"))
       do_exit();
+    else if (!strcmp(command, "wait"))
+      do_wait();
     else
       printf("invalid command\n");
   }
@@ -73,15 +71,6 @@ int do_ps()
   }
 }
 
-/*
-int kexit(int value)
-{
-  running->exitCode = value;
-  running->status = ZOMBIE;
-  tswitch(); 
-} 
-*/
-
 int do_exit()
 {
   int value;
@@ -93,36 +82,6 @@ int do_exit()
   printf("proc %d in do_exit(), enter an exit value : ", running->pid);
   scanf("%d", &value);
   kexit(value);
-} 
-
-int kfork(int (*func))
-{
-  PROC *p;
-  int  i;
-  /*** get a proc from freeList for child proc: ***/
-  p = dequeue(&freeList);
-  if (!p){
-     printf("no more proc\n");
-     return(-1);
-  }
-
-  /* initialize the new proc and its stack */
-  p->status = READY;
-  p->priority = 1;         // for ALL PROCs except P0
-  p->ppid = running->pid;
-  p->parent = running;
-
-  //                    -1   -2  -3  -4  -5  -6  -7  -8   -9
-  // kstack contains: |retPC|eax|ebx|ecx|edx|ebp|esi|edi|eflag|
-  for (i=1; i<10; i++)
-    p->kstack[SSIZE - i] = 0;
-
-  p->kstack[SSIZE-1] = (int)func;
-  p->saved_sp = &(p->kstack[SSIZE - 9]); 
-
-  enqueue(&readyQueue, p);
-
-  return p->pid;
 }
 
 int init()

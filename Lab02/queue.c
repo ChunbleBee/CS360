@@ -1,3 +1,6 @@
+#include <stdio.h>
+#include "type.h"
+
 /****************** queue.c file ********************/
 int enqueue(PROC **queue, PROC *p)
 {
@@ -6,7 +9,7 @@ int enqueue(PROC **queue, PROC *p)
        *queue = p;
         p->next = q;
     }
-    else{
+    else {
        while (q->next && p->priority <= q->next->priority)
           q = q->next;
        p->next = q->next;
