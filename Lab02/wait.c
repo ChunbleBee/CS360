@@ -141,6 +141,8 @@ int kwait(int *status)
       enqueue(&freeList, next);
       return pid;
     }
+
+    prev = next;
     next = next->sibling;
   }
   ksleep(ZOMBIE);

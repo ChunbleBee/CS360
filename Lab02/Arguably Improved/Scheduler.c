@@ -1,24 +1,49 @@
 #include "ProcessNode.h"
 #include "Queue.c"
 
-ProcessNode processes[NUM_PROCS];
+ProcessNode process[NUM_PROCS];
 ProcessNode * runningProcess;
 ProcessNode * readiedProcesses;
 ProcessNode * freeProcesses;
 ProcessNode * sleepingProcesses;
 
 int init() {
+    for (int i = 0; i < NUM_PROCS; i++) {
+        process[i].pid = i;
+        process[i].execStatus = FREE;
+        process[i].priority = 0;
+        process[i].next = (ProcessNode *)&process[(i+1)];
+    }
+    process[NUM_PROCS - 1].next = NULL;
 
+    freeProcesses = &process[0];
+    readiedProcesses = NULL;
+
+    //Dequeue & init PID0
+    runningProcess = dequeue(&freeProcesses);
+    runningProcess->execStatus = READY;
+    runningProcess->priority = 0;
+    runningProcess->parent = runningProcess;
+    printQueue(&freeProcesses, "Free Processes");
+    printf("Initialization complete - PID0 Running");
 }
 
 int scheduler() {
+    printf("Process %u in Task Scheduler.", runningProcess->pid);
 
+    if (runningProcess->execStatus == READY) {
+        priorityEnqueue(&readiedProcesses, runningProcess);
+    }
+
+    printQueue(readiedProcesses, "Readied Processes");
+    runningProcess = dequeue(&readiedProcesses);
+    printf("Next running process: %u", runningProcess->pid);
 }
 
 int kernel_fork(int * func) {
     ProcessNode * newProcess = dequeue(& freeProcesses);
     if (newProcess == NULL) {
-        printf("No more processes available!!\n");
+        printf("No more processes available for forking!!\n");
         return -1;
     }
 
@@ -81,12 +106,12 @@ int kernel_exit(int exitValue) {
         runningProcess->stack[i] = 0;
     }
 
-    processes[1].childTail->sibling = runningProcess->childHead;
-    processes[1].childTail = runningProcess->childTail;
+    process[1].childTail->sibling = runningProcess->childHead;
+    process[1].childTail = runningProcess->childTail;
     ProcessNode * child = runningProcess->childHead;
     while (child != NULL) {
-        child->parent = (&processes[1]);
-        child->ppid = processes[1].pid;
+        child->parent = (&process[1]);
+        child->ppid = process[1].pid;
     }
     runningProcess->exitStatus = exitValue;
     runningProcess->execStatus = ZOMBIE;
@@ -95,19 +120,31 @@ int kernel_exit(int exitValue) {
 }
 
 int kernel_wait(int * status) {
-    ProcessNode * process = runningProcess->childHead;
+    ProcessNode * process = runningProcess->childHead, * prev = NULL;
     if (process == NULL) {
         return -1;
     }
+
     while(process != NULL) {
         if (process->execStatus == ZOMBIE) {
             int zombiePID = process->pid;
             (* status) = process->exitStatus;
 
+            if (prev != NULL) {
+                prev->sibling = process->sibling;
+            } else {
+                runningProcess->childHead = process->next;
+                if (process->sibling == NULL) {
+                    runningProcess->childTail = NULL;
+                }
+            }
+
             initializeNode(process);
             process->pid = zombiePID;
             return zombiePID;
         }
+        prev = process;
+        process = process->sibling;
     }
     return -1;
 }
