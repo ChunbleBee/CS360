@@ -3,21 +3,16 @@
 
 ProcessNode process[NUM_PROCS];
 ProcessNode * runningProcess;
-ProcessNode * readiedProcesses;
-ProcessNode * freeProcesses;
-ProcessNode * sleepingProcesses;
+Queue readiedProcesses;
+Queue freeProcesses;
+Queue sleepingProcesses;
 
 int init() {
-    for (int i = 0; i < NUM_PROCS; i++) {
-        process[i].pid = i;
-        process[i].execStatus = FREE;
-        process[i].priority = 0;
-        process[i].next = (ProcessNode *)&process[(i+1)];
+    for (unsigned int i = 0; i < NUM_PROCS; i++) {
+        initializeNode(&process[i], i);
+        enqueue(&freeProcesses, &process[i]);
     }
-    process[NUM_PROCS - 1].next = NULL;
-
-    freeProcesses = &process[0];
-    readiedProcesses = NULL;
+    readiedProcesses.head = NULL;
 
     //Dequeue & init PID0
     runningProcess = dequeue(&freeProcesses);
@@ -35,7 +30,7 @@ int scheduler() {
         priorityEnqueue(&readiedProcesses, runningProcess);
     }
 
-    printQueue(readiedProcesses, "Readied Processes");
+    printQueue(&readiedProcesses, "Readied Processes");
     runningProcess = dequeue(&readiedProcesses);
     printf("Next running process: %u", runningProcess->pid);
 }
@@ -54,6 +49,7 @@ int kernel_fork(int * func) {
     newProcess->sibling = NULL;
 
     ProcessNode * childList = runningProcess->childTail;
+
     if (childList != NULL) {
         childList->sibling = newProcess;
     } else {
@@ -79,7 +75,7 @@ int kernel_sleep(int event) {
 }
 
 int kernel_wakeup(int event) {
-    ProcessNode * sleeper = sleepingProcesses, * prevSleeper = NULL;
+    ProcessNode * sleeper = sleepingProcesses.head, * prevSleeper = NULL;
     while (sleeper != NULL) {
         if (sleeper->wakeEvent == event) {
             ProcessNode * toWake = sleeper;
@@ -87,7 +83,7 @@ int kernel_wakeup(int event) {
             if (prevSleeper != NULL) {
                 prevSleeper->next = toWake->next;
             } else {
-                sleepingProcesses = sleepingProcesses->next;
+                sleepingProcesses.head = sleepingProcesses.head->next;
             }
             sleeper = sleeper->next;
             
@@ -139,8 +135,7 @@ int kernel_wait(int * status) {
                 }
             }
 
-            initializeNode(process);
-            process->pid = zombiePID;
+            initializeNode(process, zombiePID);
             return zombiePID;
         }
         prev = process;

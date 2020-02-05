@@ -2,57 +2,67 @@
 #include <stdio.h>
 
 #include "ProcessNode.h"
+typedef struct _queue {
+    ProcessNode * head;
+    ProcessNode * tail;
+} Queue;
 
-void enqueue(ProcessNode ** queue, ProcessNode * node) {
-    if (queue == NULL) {
-        (*queue) = node;
+void enqueue(Queue * queue, ProcessNode * node) {
+    if (queue->head == NULL) {
+        queue->head = node;
+        queue->tail = node;
     } else {
-        while ((* queue)->next != NULL) {
-            queue = (* queue)->next;
+        queue->tail->next = node;
+        queue->tail = node;
+        node->next = NULL;
+    }
+}
+
+void priorityEnqueue(Queue * queue, ProcessNode * node) {
+    ProcessNode * current = queue->head, * previous = NULL;
+    while(current != NULL || node->priority < current->priority) {
+        previous = current;
+        current = current->next;
+    }
+
+    if (previous == NULL) { //inserting at head
+        node->next = current;
+        queue->head = node;
+    }
+    if (current == NULL) { //inserting at tail
+        if (previous != NULL) {
+            previous->next = node;
         }
-        (*queue)->next = node;
+        queue->tail = node;
+        node->next = NULL;
+    } else { //Insert mid-list
+        previous->next = node;
+        node->next = current;
     }
 }
 
-void priorityEnqueue(ProcessNode ** queue, ProcessNode * node) {
-    if (queue == NULL) {
-        (* queue) = node;
-    } else {
-        ProcessNode * q = (*queue);
-        while (
-            q->next != NULL ||
-            node->priority < q->priority
-        ) {
-            q = q->next;
-        }
-        node->next = q->next;
-        q->next = node->next;
+ProcessNode * dequeue(Queue * queue) {
+    ProcessNode * out = queue->head;
+    if (out != NULL) {
+        queue->head = out->next;
     }
+    return out;
 }
 
-ProcessNode * dequeue(ProcessNode ** queue) {
-    if ((*queue) != NULL) {
-        ProcessNode * temp = (* queue);
-        (* queue) = (* queue)->next;
-        return temp;
-    } else {
-        return NULL;
-    }
-}
-
-void printQueue(ProcessNode * q, char * queueName) {
+void printQueue(Queue * queue, char * queueName) {
     printf("{ %s }:\n", queueName);
-    while (q != NULL) {
+    ProcessNode * current = queue->head;
+    while (current != NULL) {
         printf(
             "\tPID: %u, PPID: %u, Priority: %u, Status: %u, Event: %d, Exit Code: %i]",
-            q->pid,
-            q->ppid,
-            q->priority,
-            q->execStatus,
-            q->wakeEvent,
-            q->exitStatus
+            current->pid,
+            current->ppid,
+            current->priority,
+            current->execStatus,
+            current->wakeEvent,
+            current->exitStatus
         );
 
-        q = q->next;
+        current = current->next;
     }
 }

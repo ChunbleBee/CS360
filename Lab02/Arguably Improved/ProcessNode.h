@@ -31,16 +31,15 @@ typedef struct process_node {
     int * stackPtr;             // Current process stack pointer
 } ProcessNode;
 
-void initializeNode(ProcessNode * node) {
+void initializeNode(ProcessNode * node, unsigned int pid) {
     node->parent = NULL;
     node->next = NULL;
     node->sibling = NULL;
     node->childHead = NULL;
     node->childTail = NULL;
-
-    node->pid = 0;
+    node->pid = pid;
     node->ppid = 0;
-    node->priority = 1;
+    node->priority = 0;
     node->wakeEvent = -1;
     node->exitStatus = 0;
     node->execStatus = FREE;
