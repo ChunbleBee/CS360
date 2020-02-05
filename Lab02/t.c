@@ -58,7 +58,7 @@ int do_ps()
   int i; PROC *p;
   printf("pid   ppid    status\n");
   printf("--------------------\n");
-  for (i=0; i<NPROC; i++){
+  for (i=0; i<NPROC; i++) {
      p = &proc[i];
      printf(" %d      %d     ", p->pid, p->ppid);
      if (p==running)
@@ -113,8 +113,8 @@ int main()
    printf("P0 fork P1\n");
    kfork(body);  
 
-   while(1){
-     if (readyQueue){
+   while(1) {
+     if (readyQueue) {
         printf("P0: switch task\n");
         tswitch();
      }
