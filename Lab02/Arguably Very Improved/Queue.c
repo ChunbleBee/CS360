@@ -1,7 +1,8 @@
 #include <stddef.h>
 #include <stdio.h>
 
-#include "ProcessNode.h"
+#include "ProcessNode.c"
+
 typedef struct _queue {
     ProcessNode * head;
     ProcessNode * tail;
@@ -20,7 +21,7 @@ void enqueue(Queue * queue, ProcessNode * node) {
 
 void priorityEnqueue(Queue * queue, ProcessNode * node) {
     ProcessNode * current = queue->head, * previous = NULL;
-    while(current != NULL || node->priority < current->priority) {
+    while(current != NULL && node->priority < current->priority) {
         previous = current;
         current = current->next;
     }
@@ -54,7 +55,7 @@ void printQueue(Queue * queue, char * queueName) {
     ProcessNode * current = queue->head;
     while (current != NULL) {
         printf(
-            "\tPID: %u, PPID: %u, Priority: %u, Status: %u, Event: %d, Exit Code: %i]",
+            "\t| PID: %u, PPID: %u, Priority: %u, Status: %u, Wake Event: %d, Exit Code: %i\n",
             current->pid,
             current->ppid,
             current->priority,

@@ -1,5 +1,7 @@
-#include "ProcessNode.h"
+#include <stdio.h>
 #include "Queue.c"
+
+enum { NUM_PROCS = 10 };
 
 ProcessNode process[NUM_PROCS];
 ProcessNode * runningProcess;
@@ -20,11 +22,11 @@ int init() {
     runningProcess->priority = 0;
     runningProcess->parent = runningProcess;
     printQueue(&freeProcesses, "Free Processes");
-    printf("Initialization complete - PID0 Running");
+    printf("Initialization complete - PID0 Running\n");
 }
 
 int scheduler() {
-    printf("Process %u in Task Scheduler.", runningProcess->pid);
+    printf("Process %u in Task Scheduler...\n", runningProcess->pid);
 
     if (runningProcess->execStatus == READY) {
         priorityEnqueue(&readiedProcesses, runningProcess);
@@ -71,7 +73,7 @@ int kernel_sleep(int event) {
     runningProcess->wakeEvent = event;
     runningProcess->execStatus = SLEEP;
     priorityEnqueue(&sleepingProcesses, runningProcess);
-    tswitch();
+    taskSwitch();
 }
 
 int kernel_wakeup(int event) {
@@ -80,7 +82,7 @@ int kernel_wakeup(int event) {
         if (sleeper->wakeEvent == event) {
             ProcessNode * toWake = sleeper;
 
-            if (prevSleeper != NULL) {
+            if (prevSleeper != NULL) { //Mid or End of List.
                 prevSleeper->next = toWake->next;
             } else {
                 sleepingProcesses.head = sleepingProcesses.head->next;
@@ -88,7 +90,6 @@ int kernel_wakeup(int event) {
             sleeper = sleeper->next;
             
             toWake->execStatus = READY;
-            toWake->next = NULL;
             priorityEnqueue(&readiedProcesses, toWake);
         } else {
             prevSleeper = sleeper;

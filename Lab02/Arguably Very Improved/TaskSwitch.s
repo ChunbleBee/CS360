@@ -1,6 +1,6 @@
-.globl  running, scheduler, tswitch
+.globl  runningProcess, scheduler, taskSwitch
 
-tswitch:
+taskSwitch:
 SAVE:
     pushl %eax
     pushl %ebx
@@ -12,14 +12,14 @@ SAVE:
 
     pushfl
 
-    movl running, %ebx 
+    movl runningProcess, %ebx 
     movl %esp, 4(%ebx)
 
 FIND:
     call scheduler
 
 RESUME:
-    movl running, %ebx
+    movl runningProcess, %ebx
     movl 4(%ebx),%esp
 
     popfl

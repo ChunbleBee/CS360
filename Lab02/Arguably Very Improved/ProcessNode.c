@@ -1,9 +1,8 @@
 #include <stddef.h>
 
-const unsigned int NUM_PROCS = 10;
-const unsigned int STACK_SIZE = 1024;
+enum { STACK_SIZE = 1024 };
 
-typedef enum EXECUTION_STATUS{
+typedef enum {
     FREE,
     READY,
     SLEEP,
@@ -11,14 +10,12 @@ typedef enum EXECUTION_STATUS{
     ZOMBIE
 } STATUS;
 
-typedef struct process_node {
-    ProcessNode * parent;       // Ptr to Parent process
-    ProcessNode * next;         // Ptr to next process in queue
-    ProcessNode * sibling;      // Ptr to next sibling process
-
-    // Ptrs to child process linked list
-    ProcessNode * childHead;
-    ProcessNode * childTail;
+typedef struct _process_node {
+    struct _process_node * parent;       // Ptr to Parent process
+    struct _process_node * next;         // Ptr to next process in queue
+    struct _process_node * sibling;      // Ptr to next sibling process
+    struct _process_node * childHead;    // Ptr to child processes linked list head
+    struct _process_node * childTail;    // Ptr to child processes linked list tail
 
     unsigned int pid;           // This process' ID
     unsigned int ppid;          // Parent process' ID
