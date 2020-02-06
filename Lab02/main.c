@@ -1,73 +1,105 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdbool.h>
 #include <sys/types.h>
 #include <unistd.h>
 #include <string.h>
 
-//strlen() was causing unknown segfaults. So fuck it.
-unsigned int stringLength(char * str) {
-    unsigned int length = 0;
-    if (str != NULL) {
-        while(str[length] != '\0') {
-            length++;
-        }
+#define BUFFERLEN 4000
+char * paths = NULL;
+char * workingDirectory = NULL;
+char * homeDirectory = NULL;
+char ** pathTokens = NULL;
+
+//Prototypes:
+char * findFile(char * command);
+void getInput();
+char * getEnvironmentVariable(char *env[], char * prefix);
+char ** stringToTokenArray(char * string, char * delim, unsigned int * tokens);
+int executeImage(char * fileName, char *const argv[], char *const envp[]);
+char ** interpreter(char * string, unsigned int * tokens);
+
+int main (int argc, char *argv[], char *env[]) {
+    unsigned int numPaths = 0;
+
+    paths = getEnvironmentVariable(env, "PATH=");
+    workingDirectory = getEnvironmentVariable(env, "PWD="); 
+    homeDirectory = getEnvironmentVariable(env, "HOME=");
+    pathTokens = stringToTokenArray(paths, ":", &numPaths);
+
+    printf("Init Complete!\n");
+    printf("Recognized paths:\n");
+    for (int i = 0; i < numPaths; i++) {
+        printf("\t%s\n", pathTokens[i]);
     }
-    return length;
+    printf("\n");
+    printf("Current home directory: %s\n", homeDirectory);
+    printf("Current working directory: %s\n", workingDirectory);
+    printf("\n------------ Taiya's Terribly Tacky Terminal ------------\n");
+    while (true) {
+        getInput(pathTokens);
+    }
 }
 
-char * getEnvironmentPaths(char *env[]) {
-    int index = 0;
+char * findFile(char * command) {
+    char * location = NULL;
+    u_int32_t commandLen = strlen(command), totalLen = 0;
+    printf("\tlength: %u\n", commandLen);
+    
+    return location;
+}
+
+void getInput() {
+    char buffer[BUFFERLEN];
+    printf("%s>", workingDirectory);
+    fgets(buffer, BUFFERLEN, stdin);
+    printf("\tinput: %s", buffer);
+    u_int32_t len = 0;
+    char ** tokens = stringToTokenArray(buffer, " ", &len);
+    char * file = findFile(strtok(tokens[0], " "));
+
+    if (file != NULL) {
+        printf("\tFile found at: %s\n\tAttempting execution...", file);
+        executeImage(file, (tokens + 1), __environ);
+    } else {
+        printf("File not found...\n");
+    }
+    free(tokens);
+}
+
+char * getEnvironmentVariable(char *env[], char * prefix) {
+    int index = 0, prefixLength = strlen(prefix);
     while (
         env[index] != NULL &&
-        strncmp(env[index], "PATH=", 5) != 0
+        strncmp(env[index], prefix, prefixLength) != 0
     ) {
         index++;
     }
-    return env[index];
+    return (env[index] + prefixLength);
 }
 
-char ** tokenizeEnvironmentPaths(char * paths, unsigned int * numPaths) {
-    printf("init\n");
-    //strlen() was c
-    unsigned int tokens = 0, length = stringLength(paths);
+char ** stringToTokenArray(char * string, char * delim, unsigned int * tokens) {
+    unsigned length = strlen(string);
 
     for (int i = 0; i < length; i++) {
-        if (paths[i] == ':') {
-            tokens++;
+        if (string[i] == (*delim) ) {
+            (*tokens)++;
         }
     }
-    printf("past it.\n\tTokens: %u\n\tLength: %u", tokens, length);
-
-    char ** pathTokens;
-    *pathTokens = malloc(sizeof(char*) * tokens);
+    char ** tokenArray = malloc(sizeof(char *) * (*tokens));
     
-    if (*pathTokens != NULL) {
+    if (tokenArray != NULL) {
         int i = 0;
-        char * path = strtok(paths, ':');
-        while (path != NULL) {
-            printf("\t%s\n", path);
-            pathTokens[i] = path;
+        char * token = strtok(string, delim);
+        while (token != NULL) {
+            tokenArray[i] = token;
             i++;
-            path = strtok(paths, ':');
+            token = strtok(NULL, delim);
         }
     }
-    return pathTokens;
+    return tokenArray;
 }
 
-char * getInput() {}
-
-int executeImage(char * fileName, char * paths, char *const argv[], char *const envp[]) {
-
-}
-
-int main (int argc, char *argv[], char *env[]) {
-    char * paths = (getEnvironmentPaths(env) + 5); //+5 = Remove "PATH="
-    unsigned int numPaths = 0;
-    char ** pathTokens = tokenizeEnvironmentPaths(paths, &numPaths);
-
-    printf("------------ Taiya's Terribly Tacky Terminal ------------\n\n");
-    printf("Recognized Path variables:\n");
-    for (int i = 0; i < numPaths; i++) {
-        printf("\t%s", pathTokens[i]);
-    }
+int executeImage(char * fileName, char *const argv[], char *const envp[]) {
+    execve(fileName, argv, envp);
 }
