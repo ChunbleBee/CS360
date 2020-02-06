@@ -12,9 +12,9 @@ int body() {
 
     while(TRUE) {
         printf("<----------------------------->\n");
-        printf("-- Process %u running --\n", runningProcess->pid);
+        printf("-- Process %u runningProcess --\n", runningProcess->pid);
         printf("\tParent Process: %u\n", runningProcess->ppid);
-        printf("\nInput a command: [ ps | fork | switch | exit | wait ]:");
+        printf("\nInput a command: [ ps | fork | switch | exit | wait ]: ");
         fgets(command, 64, stdin);
         command[strlen(command) - 1] = 0;
         printf("\n");
@@ -66,7 +66,7 @@ int do_ps() {
             ? PROCESS_STATUS[i]
             : "Running";
         printf(
-            "| %u%14u%16s ",
+            "| %u%14u%16s |\n",
             process[i].pid,
             process[i].ppid,
             processStatus

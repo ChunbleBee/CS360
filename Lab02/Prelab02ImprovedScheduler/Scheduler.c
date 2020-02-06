@@ -34,7 +34,7 @@ int scheduler() {
 
     printQueue(&readiedProcesses, "Readied Processes");
     runningProcess = dequeue(&readiedProcesses);
-    printf("Next running process: %u", runningProcess->pid);
+    printf("Next runningProcess process: %u\n", runningProcess->pid);
 }
 
 int kernel_fork(int * func) {

@@ -1,5 +1,4 @@
 .globl  runningProcess, scheduler, taskSwitch
-
 taskSwitch:
 SAVE:
     pushl %eax
@@ -20,7 +19,7 @@ FIND:
 
 RESUME:
     movl runningProcess, %ebx
-    movl 4(%ebx),%esp
+    movl 4(%ebx), %esp
 
     popfl
 

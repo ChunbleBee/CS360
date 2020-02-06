@@ -9,35 +9,32 @@ typedef struct _queue {
 } Queue;
 
 void enqueue(Queue * queue, ProcessNode * node) {
-    if (queue->head == NULL) {
+    if (queue->head == NULL && queue->tail == NULL) {
         queue->head = node;
         queue->tail = node;
     } else {
         queue->tail->next = node;
         queue->tail = node;
-        node->next = NULL;
     }
+    node->next = NULL;
 }
 
 void priorityEnqueue(Queue * queue, ProcessNode * node) {
-    ProcessNode * current = queue->head, * previous = NULL;
-    while(current != NULL && node->priority < current->priority) {
-        previous = current;
-        current = current->next;
-    }
+    if (queue != NULL && node != NULL){
+        ProcessNode * current = queue->head, * previous = NULL;
+        while (current != NULL && node->priority <= current->priority) {
+            previous = current;
+            current = current->next;
+        }
 
-    if (previous == NULL) { //inserting at head
-        node->next = current;
-        queue->head = node;
-    }
-    if (current == NULL) { //inserting at tail
-        if (previous != NULL) {
+        if (previous == NULL) {
+            queue->head = node;
+        } else {
             previous->next = node;
         }
-        queue->tail = node;
-        node->next = NULL;
-    } else { //Insert mid-list
-        previous->next = node;
+        if (current == NULL) {
+            queue->tail = node;
+        }
         node->next = current;
     }
 }
