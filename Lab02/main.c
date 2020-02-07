@@ -10,11 +10,23 @@
 
 
 #define BUFFERLEN 4000
+typedef enum _pipe_mode {
+    NONE,
+    WRITE,
+    TWOWAY,
+    READ
+} PipeMode;
+
 char * paths = NULL;
 char * workingDirectory = NULL;
 char * homeDirectory = NULL;
 char ** pathTokens = NULL;
 u_int32_t numPaths = 0;
+
+int readFD[2];
+int writeFD[2];
+char pipeBuffer[BUFFERLEN];
+PipeMode pMode = NONE;
 
 //Prototypes:
 void getInput();
@@ -46,11 +58,11 @@ int main (int argc, char *argv[], char *env[]) {
 }
 
 void getInput() {
+    printf("getInput()\n");
     char * buffer = (char *)malloc(sizeof(char) * BUFFERLEN);
     printf("%s> ", workingDirectory);
     fgets(buffer, BUFFERLEN, stdin);
     buffer[strlen(buffer) - 1] = '\0';
-    printf("getInput(), switch to interpreter()\n");
     if (interpreter(buffer)) {
         free(buffer);
     }
@@ -58,61 +70,67 @@ void getInput() {
 
 bool interpreter(char * buffer) {
     printf("interpreter()\n");
-    u_int32_t length = 0;
-    char ** bufferBrokenByPipes = stringToTokenArray(buffer, "|", &length);
-    for(int i = 0; i < length; i++) {
-        if (strncmp(bufferBrokenByPipes[i], "exit", 4) == 0) {
-            printf("exiting...\n");
-            exit(0);
-        } else if (strncmp(bufferBrokenByPipes[i], "cd", 2) == 0) {
-            printf("#TODO: changin' directoriez...\n");
-        } else {
-            //Now we need to break by input symbols
-            char * leftHandSide = strtok(bufferBrokenByPipes[i], "<");
-            char * rightHandSide = strtok(NULL, "<");
+    char * curCommand = strtok(buffer, "|");
+    char * nextCommand = strtok(NULL, "|");
 
-            u_int32_t cmdAndArgsLen = 0; //This is here to make the thingy happy.
-            char ** cmdAndArgs = stringToTokenArray(leftHandSide, " ", &cmdAndArgsLen);
+    if (strncmp(curCommand, "exit", 4) == 0) {
+        printf("exiting...\n");
+        exit(0);
+    } else if (strncmp(curCommand, "cd", 2) == 0) {
+        printf("#TODO: changin' directoriez...\n");
+    } else {
+        //Break by input symbols
+        char * leftHandSide = strtok(curCommand, "<");
+        char * rightHandSide = strtok(NULL, "<");
+        //toss the rest of the file, as there can only ever be one input file.
 
-            //There can only ever be one input file, thus we throw away the 
-            printf("LHS: %s, RHS: %s\n", leftHandSide, rightHandSide);
-            if (rightHandSide != NULL) {
-                char * filePath = findFile(rightHandSide, F_OK);
-                if (filePath != NULL) {
-                    if (access(filePath, O_RDONLY) == 0) {
-                        printf("<-- #TODO --> : make pipe thing from input file to called process.");
-                    } else {
-                        printf("Can't open %s for reading!!!\n", filePath);
-                    }
+        u_int32_t cmdAndArgsLen = 0; //This is here to make the thingy happy.
+        char ** cmdAndArgs = stringToTokenArray(leftHandSide, " ", &cmdAndArgsLen);
+        printf("LHS: %s, RHS: %s\n", leftHandSide, rightHandSide);
+
+        if (rightHandSide != NULL) {
+            char * filePath = findFile(strtok(rightHandSide, " "), F_OK);
+            if (filePath != NULL) {
+                if (access(filePath, O_RDONLY) == 0) {
+                    printf("<-- #TODO --> : make pipe thing from input file to called process.");
                 } else {
-                    printf("Can't find file %s!!!\n", rightHandSide);
+                    printf("Can't open %s for reading!!!\n", filePath);
                 }
-                free(filePath);
-            } else {         
-                char * cmdPath = findFile(cmdAndArgs[0], F_OK);
-                if (cmdPath != NULL) {
-                    if (access(cmdPath, X_OK) == 0) {
-                        cmdAndArgs[0] = cmdPath;
-                        executeImage(cmdPath, cmdAndArgs, __environ);
-                    }
-                } else {
-                    printf("No such command: %s found!!!\n", cmdPath[0]);
-                }
-                free(cmdPath);
+            } else {
+                printf("Can't find file %s!!!\n", rightHandSide);
             }
+            free(filePath);
+        } else {
+
+            char * cmdPath = findFile(cmdAndArgs[0], F_OK);
+
+            if (cmdPath != NULL) {
+                if (access(cmdPath, X_OK) == 0) {
+                    cmdAndArgs[0] = cmdPath;
+                    executeImage(cmdPath, cmdAndArgs, __environ);
+                } else {
+                    printf("Cant execute file: %s", cmdPath);
+                }
+            } else {
+                printf("No such command: %s found!!!\n", cmdPath[0]);
+            }
+            free(cmdPath);
         }
     }
-    free(bufferBrokenByPipes);
+    if (nextCommand != NULL) {
+        interpreter(nextCommand);
+    }
     return true;
 }
 
 char * findFile(char * file, int mode) {
+    printf("findFile()\n");
     u_int32_t triedPaths = 0;
     char * newPath = NULL;
 
     while (newPath == NULL && triedPaths < numPaths) {
         newPath = makeNewPath(file, pathTokens[triedPaths]);
-        printf("New cmd path to try: %s\n", newPath);
+        printf("Trying: %s\n", newPath);
 
         if (access(newPath, mode) == 0) {
             printf("Found!!\n");
@@ -122,8 +140,9 @@ char * findFile(char * file, int mode) {
             newPath = NULL;
         }
     }
-    if (newPath == NULL) {
+    if (newPath == NULL) { //we've already found the function...
         newPath = makeNewPath(file, workingDirectory);
+        printf("Trying: %s\n", newPath);
         if (newPath != NULL && access(newPath, F_OK) == 0) {
             printf("Found!!\n");
         } else {
@@ -135,9 +154,10 @@ char * findFile(char * file, int mode) {
 }
 
 char * makeNewPath(char * file, char * path) {
+    printf("makeNewPath()\n");
     u_int32_t totalLen = 1 + strlen(file) + strlen(path);
     //Extra space for next /
-    char * newPath = (char *)malloc(sizeof(char) * totalLen);
+    char * newPath = calloc(totalLen, sizeof(char));
     if (newPath != NULL) {
         strcat(newPath, path);
         strcat(newPath, "/");
@@ -147,6 +167,7 @@ char * makeNewPath(char * file, char * path) {
 }
 
 char * getEnvironmentVariable(char *env[], char * prefix) {
+    printf("getEnvironmentVariables()\n");
     int index = 0, prefixLength = strlen(prefix);
     while (
         env[index] != NULL &&
@@ -158,6 +179,7 @@ char * getEnvironmentVariable(char *env[], char * prefix) {
 }
 
 char ** stringToTokenArray(char * string, char * delim, u_int32_t * tokens) {
+    printf("stringToTokenArray()\n");
     u_int32_t length = strlen(string);
     u_int32_t delimLen = strlen(delim);
     
@@ -172,6 +194,7 @@ char ** stringToTokenArray(char * string, char * delim, u_int32_t * tokens) {
     if ((*tokens) == 0) { 
         (*tokens) = 1;//Return the full string.
     }
+
     char ** tokenArray = malloc(sizeof(char *) * (*tokens));
     if (tokenArray != NULL) {
         u_int32_t i = 0;
@@ -186,15 +209,18 @@ char ** stringToTokenArray(char * string, char * delim, u_int32_t * tokens) {
 }
 
 int executeImage(char * fileName, char *const argv[], char *const envp[]) {
+    printf("executeImage()\n");
+
     int forked = fork();
 
     if (forked >= 0) {
         if (forked == 0) {
-            printf("Process %u forked child %u, switching tasks.\n\n", getpid(), forked);
-            execve(fileName, argv, envp);
-            printf("\n");
+            int output = execve(fileName, argv, envp);
+            exit(output);
         } else {
+            printf("Process %u forked child %u, switching tasks.\n\n", getpid(), forked);
             wait(&forked);
+            printf("\n\n");
         }
     } else {
         printf("Child fork failed D:\n");
