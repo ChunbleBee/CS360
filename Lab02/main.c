@@ -20,7 +20,7 @@ u_int32_t numPaths = 0;
 //Prototypes:
 void getInput();
 void printTokenArray(char ** tokens);
-int executeImage(char * fileName, char *const argv[], char *const envp[]);
+int executeImage(char * fileName, char *const argv[], char *const envp[], char * next);
 bool parse(char * strings);
 bool interpret(char * command);
 char * findFile(char * command, int mode);
@@ -54,69 +54,43 @@ void getInput() {
     printf("%s> ", workingDirectory);
     fgets(buffer, BUFFERLEN, stdin);
     buffer[strlen(buffer) - 1] = '\0';
-    parse(buffer);
-    free(buffer);
-}
-
-bool parse(char * buffer) {
-    printf("--> parse()\n");
-    char * curCommand = strtok(buffer, "|");
-    char * nextCommand = strtok(NULL, "\0");
-
-    int pipeFD[3];
-
-    if (nextCommand != NULL) {
-        int piped = pipe(pipeFD);
-        if (piped == 0) {
-            int forked = fork();
-            if (fork >= 0) {
-                if (forked == 0) {
-                    close(1);
-                    dup(pipeFD[1]);
-                } else {
-                    printf("Process %u forked child %u, switching tasks.\n\n", getpid(), forked);
-                    close(0);
-                    dup(pipeFD[0]);
-                    wait(&forked);
-                    return parse(nextCommand);
-                }
-            } else {
-                printf("Child fork failed D:\n");
-            }
-        } else {
-            printf("Failed to open pipe on cmd: %s\n", curCommand);
-        }
-    } else {
-        return interpret(curCommand);
+    if (interpret(buffer)) {
+        free(buffer);
     }
 }
 
-bool interpret(char * command) {
+bool interpret(char * buffer) {
     printf("--> interpret()\n");
-    if (strncmp(command, "#", 1) == 0) {
-        printf("%s\n", &(command[1]) );
-    } else if (strncmp(command, "exit", 4) == 0) {
+
+    char * current = strtok(buffer, "|");
+    char * next = strtok(NULL, "\0");
+
+    if (strncmp(current, "#", 1) == 0) {
+        printf("%s\n", &(current[1]) );
+    } else if (strncmp(current, "exit", 4) == 0) {
         printf("exiting...\n");
         exit(0);
-    } else if (strncmp(command, "cd", 2) == 0) {
+    } else if (strncmp(current, "cd", 2) == 0) {
         printf("#TODO: changin' directoriez...\n");
     } else {
         u_int32_t cmdAndArgsLen = 0; //This is here to make the thingy happy.
-        char ** cmdAndArgs = stringToTokenArray(command, " ", &cmdAndArgsLen);
+        char ** cmdAndArgs = stringToTokenArray(current, " ", &cmdAndArgsLen);
         char * cmdPath = findFile(cmdAndArgs[0], F_OK);
 
         if (cmdPath != NULL) {
             if (access(cmdPath, X_OK) == 0) {
                 cmdAndArgs[0] = cmdPath;
-                executeImage(cmdPath, cmdAndArgs, __environ);
+                executeImage(cmdPath, cmdAndArgs, __environ, next);
             } else {
                 printf("Cant execute file: %s", cmdPath);
             }
         } else {
             printf("Command '%s' cannot be found!!!\n", cmdAndArgs[0]);
         }
+
         free(cmdPath);
     }
+    printf("\n");
     return true;
 }
 
@@ -217,15 +191,41 @@ char ** stringToTokenArray(char * string, char * delim, u_int32_t * tokens) {
     return tokenArray;
 }
 
-int executeImage(char * fileName, char *const argv[], char *const envp[]) {
+int executeImage(char * fileName, char *const argv[], char *const envp[], char * next) {
     printf("--> executeImage()\n");
     int forked = fork();
 
     if (forked >= 0) {
         if (forked == 0) {
-
+            if (next != NULL) {
+                int pipeFD[2];
+                printf("THERE WAS A PIPING FIGHT!!!\n");
+                int pipez = pipe(pipeFD);
+                if (pipez == 0) {
+                    int forkz = fork();
+                    if (forkz >= 0) {
+                        if (forkz == 0) {
+                            close(1);
+                            dup(pipeFD[1]);
+                            close(pipeFD[0]);
+                        } else {
+                            // parent
+                            printf("Process %u forked child %u, switching tasks.\n\n", getpid(), forkz);
+                            close(0);
+                            dup(pipeFD[0]);
+                            close(pipeFD[1]);
+                            wait(&forkz);
+                            interpret(next);
+                            exit(0);
+                        }
+                    } else {
+                        printf("Failed to fork process )= PID%u", getpid());
+                    }
+                } else {
+                    printf("Failed to create pipe D=");
+                }
+            }
             char ** arg = argv;
-
             for (u_int32_t i = 0; arg[i] != NULL; i++) {
                 if (strcmp(arg[i], "<") == 0) {
                     arg[i] = NULL;
@@ -249,9 +249,9 @@ int executeImage(char * fileName, char *const argv[], char *const envp[]) {
             exit(output);
         } else {
             printf("Process %u forked child %u, switching tasks.\n\n", getpid(), forked);
-            printf("--------------------------------------------\n");
+            printf("\n--------------------------------------------\n");
             wait(&forked);
-            printf("--------------------------------------------\n");
+            printf("\n--------------------------------------------\n");
         }
     } else {
         printf("Child fork failed D:\n");
