@@ -4,24 +4,27 @@
 #include <sys/types.h>
 #include <unistd.h>
 #include <string.h>
+#include <fcntl.h>
+#include <regex.h>
+
 
 #define BUFFERLEN 4000
 char * paths = NULL;
 char * workingDirectory = NULL;
 char * homeDirectory = NULL;
 char ** pathTokens = NULL;
+u_int32_t numPaths = 0;
 
 //Prototypes:
-char * findFile(char * command);
 void getInput();
-char * getEnvironmentVariable(char *env[], char * prefix);
-char ** stringToTokenArray(char * string, char * delim, unsigned int * tokens);
 int executeImage(char * fileName, char *const argv[], char *const envp[]);
-char ** interpreter(char * string, unsigned int * tokens);
+bool interpreter(char * strings);
+char * findFile(char * command, int mode);
+char * getEnvironmentVariable(char *env[], char * prefix);
+char * makeNewPath(char * file, char * path);
+char ** stringToTokenArray(char * string, char * delim, u_int32_t * tokens);
 
 int main (int argc, char *argv[], char *env[]) {
-    unsigned int numPaths = 0;
-
     paths = getEnvironmentVariable(env, "PATH=");
     workingDirectory = getEnvironmentVariable(env, "PWD="); 
     homeDirectory = getEnvironmentVariable(env, "HOME=");
@@ -35,36 +38,108 @@ int main (int argc, char *argv[], char *env[]) {
     printf("\n");
     printf("Current home directory: %s\n", homeDirectory);
     printf("Current working directory: %s\n", workingDirectory);
-    printf("\n------------ Taiya's Terribly Tacky Terminal ------------\n");
+    printf("\n<------------ Taiya's Terribly Tacky Terminal ------------>\n");
     while (true) {
-        getInput(pathTokens);
+        getInput();
     }
-}
-
-char * findFile(char * command) {
-    char * location = NULL;
-    u_int32_t commandLen = strlen(command), totalLen = 0;
-    printf("\tlength: %u\n", commandLen);
-    
-    return location;
 }
 
 void getInput() {
-    char buffer[BUFFERLEN];
-    printf("%s>", workingDirectory);
+    char * buffer = (char *)malloc(sizeof(char) * BUFFERLEN);
+    printf("%s> ", workingDirectory);
     fgets(buffer, BUFFERLEN, stdin);
-    printf("\tinput: %s", buffer);
-    u_int32_t len = 0;
-    char ** tokens = stringToTokenArray(buffer, " ", &len);
-    char * file = findFile(strtok(tokens[0], " "));
+    buffer[strlen(buffer) - 1] = '\0';
 
-    if (file != NULL) {
-        printf("\tFile found at: %s\n\tAttempting execution...", file);
-        executeImage(file, (tokens + 1), __environ);
-    } else {
-        printf("File not found...\n");
+    if (interpreter(buffer)) {
+        free(buffer);
     }
-    free(tokens);
+}
+
+bool interpreter(char * buffer) {
+    u_int32_t length = 0;
+    char ** bufferBrokenByPipes = stringToTokenArray(buffer, "|", &length);
+    for(int i = 0; i < length; i++) {
+        if (strcmp(bufferBrokenByPipes[i], "exit") == 0) {
+            exit(0);
+        } else if (strncmp(bufferBrokenByPipes[i], "cd", 2)) {
+            //#TODO: add CD function here.
+        } else {
+            //Now we need to break by input symbols
+            char * leftHandSide = strtok(bufferBrokenByPipes[i], "<");
+            char * rightHandSide = strtok(NULL, "<");
+
+            u_int32_t cmdAndArgsLen = 0;
+            char ** cmdAndArgs = stringToTokenArray(leftHandSide, " ", &cmdAndArgsLen);
+
+            //There can only ever be one input file, thus we throw away the 
+            printf("RHS: %s, LHS: &s", rightHandSide, leftHandSide);
+            if (rightHandSide != NULL) {
+                char * filePath = findFile(rightHandSide, F_OK);
+                if (filePath != NULL) {
+                    if (access(filePath, O_RDONLY) == 0) {
+                        printf("<-- #TODO --> : make pipe thing from input file to called process.");
+                    } else {
+                        printf("Can't open %s for reading!!!\n", filePath);
+                    }
+                } else {
+                    printf("Can't find file %s!!!\n", rightHandSide);
+                }
+                free(filePath);
+            } else {         
+                char * cmdPath = findFile(cmdAndArgs[0], F_OK);
+                if (cmdPath != NULL) {
+                    if (access(cmdPath, X_OK) == 0) {
+                        executeImage(cmdPath, (&cmdAndArgs[1]), __environ);
+                    }
+                } else {
+                    printf("No such command: %s found!!!\n", cmdPath[0]);
+                }
+                free(cmdPath);
+            }
+        }
+    }
+    free(bufferBrokenByPipes);
+    return true;
+}
+
+char * findFile(char * file, int mode) {
+    u_int32_t triedPaths = 0;
+    char * newPath = NULL;
+
+    while (newPath == NULL && triedPaths < numPaths) {
+        newPath = makeNewPath(file, pathTokens[triedPaths]);
+        printf("New cmd path to try: %s", newPath);
+
+        if (access(newPath, mode) == 0) {
+            printf("Found!!\n");
+        } else {
+            triedPaths++;
+            free(newPath);
+            newPath = NULL;
+        }
+    }
+    if (newPath == NULL) {
+        newPath = makeNewPath(file, workingDirectory);
+        if (newPath != NULL && access(newPath, F_OK) == 0) {
+            printf("Found!!\n");
+        } else {
+            free(newPath);
+            newPath = NULL;
+        }
+    }
+    return newPath;
+}
+
+char * makeNewPath(char * file, char * path) {
+    u_int32_t totalLen = 1 + strlen(file) + strlen(path);
+    //Extra space for next /
+    char * newPath = (char *)malloc(sizeof(char) * totalLen);
+    if (newPath != NULL) {
+        strcat(newPath, path);
+        strcat(newPath, "/");
+        strcat(newPath, file);
+    }
+    return newPath;
 }
 
 char * getEnvironmentVariable(char *env[], char * prefix) {
@@ -75,24 +150,32 @@ char * getEnvironmentVariable(char *env[], char * prefix) {
     ) {
         index++;
     }
-    return (env[index] + prefixLength);
+    return (env[index] + prefixLength);{
+        printf("Found command - attempting execution");
+    }
 }
 
-char ** stringToTokenArray(char * string, char * delim, unsigned int * tokens) {
-    unsigned length = strlen(string);
-
-    for (int i = 0; i < length; i++) {
-        if (string[i] == (*delim) ) {
-            (*tokens)++;
+char ** stringToTokenArray(char * string, char * delim, u_int32_t * tokens) {
+    u_int32_t length = strlen(string);
+    u_int32_t delimLen = strlen(delim);
+    
+    for (u_int32_t i = 0; i < length; i++) {
+        for (int j = 0; j < delimLen; j++) {
+            if (string[i] == delim[j]) {
+                (*tokens)++;
+            }
         }
     }
+
+    if ((*tokens) == 0) { 
+        (*tokens) = 1;//Return the full string.
+    }
     char ** tokenArray = malloc(sizeof(char *) * (*tokens));
-    
     if (tokenArray != NULL) {
-        int i = 0;
+        u_int32_t i = 0;
         char * token = strtok(string, delim);
         while (token != NULL) {
-            tokenArray[i] = token;
+            *(tokenArray + i) = token;
             i++;
             token = strtok(NULL, delim);
         }
@@ -101,5 +184,10 @@ char ** stringToTokenArray(char * string, char * delim, unsigned int * tokens) {
 }
 
 int executeImage(char * fileName, char *const argv[], char *const envp[]) {
-    execve(fileName, argv, envp);
+    int forked = fork();
+    if (forked == 0) {
+        execve(fileName, argv, envp);
+    } else {
+        wait();
+    }
 }
