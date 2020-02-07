@@ -10,9 +10,10 @@
 
 
 #define BUFFERLEN 4000
+#define MAXPATH 4096
 
 char * paths = NULL;
-char * workingDirectory = NULL;
+char workingDirectory[MAXPATH];
 char * homeDirectory = NULL;
 char ** pathTokens = NULL;
 u_int32_t numPaths = 0;
@@ -30,10 +31,9 @@ char ** stringToTokenArray(char * string, char * delim, u_int32_t * tokens);
 
 int main (int argc, char *argv[], char *env[]) {
     paths = getEnvironmentVariable(env, "PATH=");
-    workingDirectory = getEnvironmentVariable(env, "PWD="); 
     homeDirectory = getEnvironmentVariable(env, "HOME=");
     pathTokens = stringToTokenArray(paths, ":", &numPaths);
-
+    getcwd(workingDirectory, MAXPATH);
     printf("Init Complete!\n");
     printf("Recognized paths:\n");
     printTokenArray(pathTokens);
@@ -47,62 +47,63 @@ int main (int argc, char *argv[], char *env[]) {
 }
 
 void getInput() {
-    printf("--> getInput()\n");
-
-    char * buffer = calloc(BUFFERLEN, sizeof(char));
+    char buffer[BUFFERLEN];
 
     printf("%s> ", workingDirectory);
     fgets(buffer, BUFFERLEN, stdin);
     buffer[strlen(buffer) - 1] = '\0';
-    if (interpret(buffer)) {
-        free(buffer);
-    }
+    interpret(buffer);
 }
 
 bool interpret(char * buffer) {
-    printf("--> interpret()\n");
-
     char * current = strtok(buffer, "|");
     char * next = strtok(NULL, "\0");
 
-    if (strncmp(current, "#", 1) == 0) {
-        printf("%s\n", &(current[1]) );
-    } else if (strncmp(current, "exit", 4) == 0) {
-        printf("exiting...\n");
-        exit(0);
-    } else if (strncmp(current, "cd", 2) == 0) {
-        printf("#TODO: changin' directoriez...\n");
-    } else {
-        u_int32_t cmdAndArgsLen = 0; //This is here to make the thingy happy.
-        char ** cmdAndArgs = stringToTokenArray(current, " ", &cmdAndArgsLen);
-        char * cmdPath = findFile(cmdAndArgs[0], F_OK);
+    if (current != NULL) {
+        if (strncmp(current, "#", 1) == 0) {
+            printf("%s\n", &(current[1]) );
+        } else if (strncmp(current, "exit", 4) == 0) {
+            printf("exiting...\n");
+            exit(0);
+        } else if (strncmp(current, "cd ", 3) == 0) {
+            char * path = current + 3;
+            int cd = chdir(path);
 
-        if (cmdPath != NULL) {
-            if (access(cmdPath, X_OK) == 0) {
-                cmdAndArgs[0] = cmdPath;
-                executeImage(cmdPath, cmdAndArgs, __environ, next);
+            if (cd == 0) {
+                printf("Changin' directoriez...\n");
+                getcwd(workingDirectory, MAXPATH);
             } else {
-                printf("Cant execute file: %s", cmdPath);
+                printf("Failed to change directories - check yer path, ya dingus!\n");
             }
         } else {
-            printf("Command '%s' cannot be found!!!\n", cmdAndArgs[0]);
-        }
+            u_int32_t cmdAndArgsLen = 0; //This is here to make the thingy happy.
+            char ** cmdAndArgs = stringToTokenArray(current, " ", &cmdAndArgsLen);
+            char * cmdPath = findFile(cmdAndArgs[0], F_OK);
 
-        free(cmdPath);
+            if (cmdPath != NULL) {
+                if (access(cmdPath, X_OK) == 0) {
+                    cmdAndArgs[0] = cmdPath;
+                    executeImage(cmdPath, cmdAndArgs, __environ, next);
+                } else {
+                    printf("Cant execute file: %s\n", cmdPath);
+                }
+            } else {
+                printf("Command '%s' cannot be found!!!\n", cmdAndArgs[0]);
+            }
+            free(cmdPath);
+        }
+        printf("\n");
+        return true;
     }
-    printf("\n");
-    return true;
 }
 
 char * findFile(char * file, int mode) {
-    printf("--> findFile()\n");
     u_int32_t triedPaths = 0;
     char * newPath = NULL;
 
     while (newPath == NULL && triedPaths < numPaths) {
         newPath = makeNewPath(file, pathTokens[triedPaths]);
         printf("Trying: %s\n", newPath);
-
         if (access(newPath, mode) == 0) {
             printf("Found!!\n");
         } else {
@@ -138,20 +139,21 @@ char * findFile(char * file, int mode) {
 }
 
 char * makeNewPath(char * file, char * path) {
-    printf("--> makeNewPath()\n");
     u_int32_t totalLen = 1 + strlen(file) + strlen(path);
-    //Extra space for next /
-    char * newPath = calloc(totalLen, sizeof(char));
-    if (newPath != NULL) {
-        strcat(newPath, path);
-        strcat(newPath, "/");
-        strcat(newPath, file);
+
+    if (totalLen <= MAXPATH) {
+        char * newPath = calloc(MAXPATH, sizeof(char));
+        if (newPath != NULL) {
+            strcat(newPath, path);
+            strcat(newPath, "/");
+            strcat(newPath, file);
+        }
+        return newPath;
     }
-    return newPath;
+    return NULL;
 }
 
 char * getEnvironmentVariable(char *env[], char * prefix) {
-    printf("--> getEnvironmentVariables()\n");
     int index = 0, prefixLength = strlen(prefix);
     while (
         env[index] != NULL &&
@@ -165,7 +167,6 @@ char * getEnvironmentVariable(char *env[], char * prefix) {
 }
 
 char ** stringToTokenArray(char * string, char * delim, u_int32_t * tokens) {
-    printf("--> stringToTokenArray()\n");
     (*tokens) = 1; //Always returns, at least, the string itself.
     u_int32_t length = strlen(string);
     u_int32_t delimLen = strlen(delim);
@@ -192,7 +193,6 @@ char ** stringToTokenArray(char * string, char * delim, u_int32_t * tokens) {
 }
 
 int executeImage(char * fileName, char *const argv[], char *const envp[], char * next) {
-    printf("--> executeImage()\n");
     int forked = fork();
 
     if (forked >= 0) {
