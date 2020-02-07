@@ -1,0 +1,223 @@
+Script started on 2020-02-07 10:29:59-08:00 [TERM="xterm-256color" TTY="/dev/pts/0" COLUMNS="74" LINES="38"]
+]0;taiya@Scuzbucket: ~/Repositories/CS360/Lab02[01;32mtaiya@Scuzbucket[00m:[01;34m~/Repositories/CS360/Lab02[00m$ ./build-run
+[01m[Kmain.c:[m[K In function ‘[01m[KexecuteImage[m[K’:
+[01m[Kmain.c:223:27:[m[K [01;35m[Kwarning: [m[Kinitialization discards ‘[01m[Kconst[m[K’ qualifier from pointer target type [[01;35m[K-Wdiscarded-qualifiers[m[K]
+  223 |             char ** arg = [01;35m[Kargv[m[K;
+      |                           [01;35m[K^~~~[m[K
+Init Complete!
+Recognized paths:
+	/home/taiya/.local/bin
+	/usr/local/sbin
+	/usr/local/bin
+	/usr/sbin
+	/usr/bin
+	/sbin
+	/bin
+	/usr/games
+	/usr/local/games
+	/snap/bin
+	/home/taiya/.dotnet/tools
+
+Current home directory: /home/taiya
+Current working directory: /home/taiya/Repositories/CS360/Lab02
+
+<------------ Taiya's Terribly Tacky Terminal ------------>
+/home/taiya/Repositories/CS360/Lab02> ; ls -a -l
+total 64
+drwxr-xr-x 3 taiya taiya  4096 Feb  7 10:30 .
+drwxr-xr-x 6 taiya taiya  4096 Feb  6 23:22 ..
+-rwxr-xr-x 1 taiya taiya 26312 Feb  7 10:30 a.out
+-rwxrwxrwx 1 taiya taiya    40 Feb  6 20:08 build-run
+-rw-r--r-- 1 taiya taiya   796 Feb  7 10:06 file
+-rw-r--r-- 1 taiya taiya   780 Feb  4 10:55 LAB2check.txt
+-rw-r--r-- 1 taiya taiya  8003 Feb  7 10:28 main.c
+-rw-r--r-- 1 taiya taiya   841 Feb  7 10:28 out
+-rw-r--r-- 1 taiya taiya     0 Feb  7 10:29 output.txt
+drwxr-xr-x 2 taiya taiya  4096 Feb  5 12:48 .vscode
+/home/taiya/Repositories/CS360/Lab02> rm out
+/home/taiya/Repositories/CS360/Lab02> ls
+a.out  build-run  file	LAB2check.txt  main.c  output.txt
+/home/taiya/Repositories/CS360/Lab02> cat file
+Final Fantasy: The Spirits Within
+Final Fantasy: Record Keeper
+Final Fantasy 7: Crisis Core
+Final Fantasy I
+Final Fantasy II
+Final Fantasy III
+Final Fantasy IV
+Final Fantasy V
+Final Fantasy VI
+Final Fantasy VII
+Final Fantasy VIII
+Final Fantasy IX
+Final Fantasy X
+Final Fantasy X-2
+Final Fantasy XI
+Final Fantasy XII
+Final Fantasy XIII
+Final Fantasy XIII-2
+Lightning Returns: Final Fantasy XIII
+Final Fantasy XIV
+Final Fantasy XIV: A Realm Reborn
+Final Fantasy XV
+Final Fantasy Type-0
+Final Fantasy Adventure
+Final Fantasy Mystic Quest
+Final Fantasy Crystal Chronicles
+Final Fantasy Cyrstal Chronicles: Rings of Fates
+Dissidia Final Fantasy
+Dissidia 012 Final Fantasy
+Dissidia Final Fantasy Opera Omnia
+Dissidia Final Fantasy NT
+Mobius: Final Fantasy
+World of Final Fantasy
+Final Fantasy Tactics
+
+/home/taiya/Repositories/CS360/Lab02> nano file
+[?1049h[22;0;0t[1;38r(B[m[4l[?7h[39;49m[?1h=[?1h=[?1h=[?25l[39;49m(B[m[H[2J[36;31H(B[0;7m[ Reading... ](B[m[36;29H(B[0;7m[ Read 35 lines ](B[m[H(B[0;7m  GNU nano 4.3                       file                                 [1;73H(B[m[37d(B[0;7m^G(B[m Get Help   (B[0;7m^O(B[m Write Out  (B[0;7m^W(B[m Where Is   (B[0;7m^K(B[m Cut Text   (B[0;7m^J(B[m Justify[38d(B[0;7m^X(B[m Exit[15G(B[0;7m^R(B[m Read File  (B[0;7m^\(B[m Replace    (B[0;7m^U(B[m Paste Text (B[0;7m^T(B[m To Spell[36d[2d[39;49m(B[mFinal Fantasy: The Spirits Within[3dFinal Fantasy: Record Keeper[4dFinal Fantasy 7: Crisis Core[5dFinal Fantasy I[6dFinal Fantasy II[7dFinal Fantasy III[8dFinal Fantasy IV[9dFinal Fantasy V[10dFinal Fantasy VI[11dFinal Fantasy VII[12dFinal Fantasy VIII[13dFinal Fantasy IX[14dFinal Fantasy X[15dFinal Fantasy X-2[16dFinal Fantasy XI[17dFinal Fantasy XII[18dFinal Fantasy XIII[19dFinal Fantasy XIII-2[20dLightning Returns: Final Fantasy XIII[21dFinal Fantasy XIV[22dFinal Fantasy XIV: A Realm Reborn[23dFinal Fantasy XV[24dFinal Fantasy Type-0[25dFinal Fantasy Adventure[26dFinal Fantasy Mystic Quest[27dFinal Fantasy Crystal Chronicles[28dFinal Fantasy Cyrstal Chronicles: Rings of Fates[29dDissidia Final Fantasy[30dDissidia 012 Final Fantasy[31dDissidia Final Fantasy Opera Omnia[32dDissidia Final Fantasy NT[33dMobius: Final Fantasy[34dWorld of Final Fantasy[35dFinal Fantasy Tactics[2d[?12l[?25h[?25l[36d[J[38;74H[?12l[?25h[38;1H[?1049l[23;0;0t[?1l>/home/taiya/Repositories/CS360/Lab02> cat file < > out  
+/home/taiya/Repositories/CS360/Lab02> ls -l
+total 56
+-rwxr-xr-x 1 taiya taiya 26312 Feb  7 10:30 a.out
+-rwxrwxrwx 1 taiya taiya    40 Feb  6 20:08 build-run
+-rw-r--r-- 1 taiya taiya   796 Feb  7 10:06 file
+-rw-r--r-- 1 taiya taiya   780 Feb  4 10:55 LAB2check.txt
+-rw-r--r-- 1 taiya taiya  8003 Feb  7 10:28 main.c
+-rw-r--r-- 1 taiya taiya   796 Feb  7 10:30 out
+-rw-r--r-- 1 taiya taiya  4096 Feb  7 10:30 output.txt
+/home/taiya/Repositories/CS360/Lab02> cat out
+Final Fantasy: The Spirits Within
+Final Fantasy: Record Keeper
+Final Fantasy 7: Crisis Core
+Final Fantasy I
+Final Fantasy II
+Final Fantasy III
+Final Fantasy IV
+Final Fantasy V
+Final Fantasy VI
+Final Fantasy VII
+Final Fantasy VIII
+Final Fantasy IX
+Final Fantasy X
+Final Fantasy X-2
+Final Fantasy XI
+Final Fantasy XII
+Final Fantasy XIII
+Final Fantasy XIII-2
+Lightning Returns: Final Fantasy XIII
+Final Fantasy XIV
+Final Fantasy XIV: A Realm Reborn
+Final Fantasy XV
+Final Fantasy Type-0
+Final Fantasy Adventure
+Final Fantasy Mystic Quest
+Final Fantasy Crystal Chronicles
+Final Fantasy Cyrstal Chronicles: Rings of Fates
+Dissidia Final Fantasy
+Dissidia 012 Final Fantasy
+Dissidia Final Fantasy Opera Omnia
+Dissidia Final Fantasy NT
+Mobius: Final Fantasy
+World of Final Fantasy
+Final Fantasy Tactics
+
+/home/taiya/Repositories/CS360/Lab02> cat < file
+Final Fantasy: The Spirits Within
+Final Fantasy: Record Keeper
+Final Fantasy 7: Crisis Core
+Final Fantasy I
+Final Fantasy II
+Final Fantasy III
+Final Fantasy IV
+Final Fantasy V
+Final Fantasy VI
+Final Fantasy VII
+Final Fantasy VIII
+Final Fantasy IX
+Final Fantasy X
+Final Fantasy X-2
+Final Fantasy XI
+Final Fantasy XII
+Final Fantasy XIII
+Final Fantasy XIII-2
+Lightning Returns: Final Fantasy XIII
+Final Fantasy XIV
+Final Fantasy XIV: A Realm Reborn
+Final Fantasy XV
+Final Fantasy Type-0
+Final Fantasy Adventure
+Final Fantasy Mystic Quest
+Final Fantasy Crystal Chronicles
+Final Fantasy Cyrstal Chronicles: Rings of Fates
+Dissidia Final Fantasy
+Dissidia 012 Final Fantasy
+Dissidia Final Fantasy Opera Omnia
+Dissidia Final Fantasy NT
+Mobius: Final Fantasy
+World of Final Fantasy
+Final Fantasy Tactics
+
+/home/taiya/Repositories/CS360/Lab02> cat file      main.c | grep printf
+    printf("Init Complete!\n");
+    printf("Recognized paths:\n");
+    printf("\n");
+    printf("Current home directory: %s\n", homeDirectory);
+    printf("Current working directory: %s\n", workingDirectory);
+    printf("\n<------------ Taiya's Terribly Tacky Terminal ------------>\n");
+    printf("%s> ", workingDirectory);
+            printf("%s\n", &(current[1]) );
+            printf("exiting...\n");
+                printf("Failed to change directories - check yer path, ya dingus!\n");
+                    printf("Cant execute file: %s\n", cmdPath);
+                printf("Command '%s' cannot be found!!!\n", cmdAndArgs[0]);
+                        printf("Failed to fork process )= PID%u", getpid());
+                    printf("Failed to create pipe D=");
+        printf("Child fork failed D:\n");
+        printf("\t%s\n", token);
+/home/taiya/Repositories/CS360/Lab02> cat < main.c | grep printf > out
+/home/taiya/Repositories/CS360/Lab02> cat out
+    printf("Init Complete!\n");
+    printf("Recognized paths:\n");
+    printf("\n");
+    printf("Current home directory: %s\n", homeDirectory);
+    printf("Current working directory: %s\n", workingDirectory);
+    printf("\n<------------ Taiya's Terribly Tacky Terminal ------------>\n");
+    printf("%s> ", workingDirectory);
+            printf("%s\n", &(current[1]) );
+            printf("exiting...\n");
+                printf("Failed to change directories - check yer path, ya dingus!\n");
+                    printf("Cant execute file: %s\n", cmdPath);
+                printf("Command '%s' cannot be found!!!\n", cmdAndArgs[0]);
+                        printf("Failed to fork process )= PID%u", getpid());
+                    printf("Failed to create pipe D=");
+        printf("Child fork failed D:\n");
+        printf("\t%s\n", token);
+/home/taiya/Repositories/CS360/Lab02> cat main.c | grep printf | more
+    printf("Init Complete!\n");
+    printf("Recognized paths:\n");
+    printf("\n");
+    printf("Current home directory: %s\n", homeDirectory);
+    printf("Current working directory: %s\n", workingDirectory);
+    printf("\n<------------ Taiya's Terribly Tacky Terminal ------------>\
+n");
+    printf("%s> ", workingDirectory);
+            printf("%s\n", &(current[1]) );
+            printf("exiting...\n");
+                printf("Failed to change directories - check yer path, ya 
+dingus!\n");
+                    printf("Cant execute file: %s\n", cmdPath);
+                printf("Command '%s' cannot be found!!!\n", cmdAndArgs[0])
+;
+                        printf("Failed to fork process )= PID%u", getpid()
+);
+                    printf("Failed to create pipe D=");
+        printf("Child fork failed D:\n");
+        printf("\t%s\n", token);
+/home/taiya/Repositories/CS360/Lab02> cat file    main.c | cat   | cat | grep printf | grep dingus | more
+                printf("Failed to change directories - check yer path, ya 
+dingus!\n");
+/home/taiya/Repositories/CS360/Lab02> exit
+exiting...
+]0;taiya@Scuzbucket: ~/Repositories/CS360/Lab02[01;32mtaiya@Scuzbucket[00m:[01;34m~/Repositories/CS360/Lab02[00m$ exit
+exit
+
+Script done on 2020-02-07 10:32:23-08:00 [COMMAND_EXIT_CODE="0"]

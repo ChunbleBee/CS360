@@ -30,7 +30,12 @@ char * makeNewPath(char * file, char * path);
 char ** stringToTokenArray(char * string, char * delim, u_int32_t * tokens);
 
 int main (int argc, char *argv[], char *env[]) {
-    paths = getEnvironmentVariable(env, "PATH=");
+    //when the paths get wrecked by strToTokArr()
+    // this stuff is so thatit isn't fckd in the environ vars
+    char * tempPaths = getEnvironmentVariable(env, "PATH=");
+    paths = calloc(strlen(tempPaths) + 1, sizeof(char)); //+1 to get terminal character.
+    strcpy(paths, tempPaths);
+
     homeDirectory = getEnvironmentVariable(env, "HOME=");
     pathTokens = stringToTokenArray(paths, ":", &numPaths);
     getcwd(workingDirectory, MAXPATH);
@@ -70,7 +75,6 @@ bool interpret(char * buffer) {
             int cd = chdir(path);
 
             if (cd == 0) {
-                printf("Changin' directoriez...\n");
                 getcwd(workingDirectory, MAXPATH);
             } else {
                 printf("Failed to change directories - check yer path, ya dingus!\n");
@@ -92,7 +96,6 @@ bool interpret(char * buffer) {
             }
             free(cmdPath);
         }
-        printf("\n");
         return true;
     }
 }
@@ -103,9 +106,7 @@ char * findFile(char * file, int mode) {
 
     while (newPath == NULL && triedPaths < numPaths) {
         newPath = makeNewPath(file, pathTokens[triedPaths]);
-        printf("Trying: %s\n", newPath);
         if (access(newPath, mode) == 0) {
-            printf("Found!!\n");
         } else {
             triedPaths++;
             free(newPath);
@@ -115,9 +116,7 @@ char * findFile(char * file, int mode) {
 
     if (newPath == NULL) { //we've already found the function...
         newPath = makeNewPath(file, workingDirectory);
-        printf("Trying: %s\n", newPath);
         if (newPath != NULL && access(newPath, F_OK) == 0) {
-            printf("Found!!\n");
         } else {
             free(newPath);
             newPath = NULL;
@@ -126,9 +125,7 @@ char * findFile(char * file, int mode) {
 
     if (newPath == NULL) { //we've already found the function..
         newPath = makeNewPath(file, "");
-        printf("Trying: %s\n", newPath);
         if (newPath != NULL && access(newPath, F_OK) == 0) {
-            printf("Found!!\n");
         } else {
             free(newPath);
             newPath = NULL;
@@ -188,7 +185,6 @@ char ** stringToTokenArray(char * string, char * delim, u_int32_t * tokens) {
             i++;
         }
     }
-    printTokenArray(tokenArray);
     return tokenArray;
 }
 
@@ -199,18 +195,17 @@ int executeImage(char * fileName, char *const argv[], char *const envp[], char *
         if (forked == 0) {
             if (next != NULL) {
                 int pipeFD[2];
-                printf("THERE WAS A PIPING FIGHT!!!\n");
                 int pipez = pipe(pipeFD);
                 if (pipez == 0) {
                     int forkz = fork();
                     if (forkz >= 0) {
                         if (forkz == 0) {
+                            //Child
                             close(1);
                             dup(pipeFD[1]);
                             close(pipeFD[0]);
                         } else {
                             // parent
-                            printf("Process %u forked child %u, switching tasks.\n\n", getpid(), forkz);
                             close(0);
                             dup(pipeFD[0]);
                             close(pipeFD[1]);
@@ -234,12 +229,12 @@ int executeImage(char * fileName, char *const argv[], char *const envp[], char *
                     dup(file);
                 } else if (strcmp(arg[i], ">") == 0) {
                     arg[i] = NULL;
-                    int file = open(arg[i + 1], O_WRONLY | O_CREAT, 0644);
+                    int file = open(arg[i + 1], O_WRONLY | O_CREAT | O_TRUNC, 0644);
                     close(1);
                     dup(file);
                 } else if (strcmp(arg[i], ">>") == 0) {
                     arg[i] = NULL;
-                    int file = open(arg[i + 1], O_WRONLY | O_CREAT | O_APPEND, 0644);
+                    int file = open(arg[i + 1], O_WRONLY | O_CREAT | O_APPEND | O_TRUNC, 0644);
                     close(1);
                     dup(file);
                 }
@@ -248,10 +243,7 @@ int executeImage(char * fileName, char *const argv[], char *const envp[], char *
             int output = execve(fileName, argv, envp);
             exit(output);
         } else {
-            printf("Process %u forked child %u, switching tasks.\n\n", getpid(), forked);
-            printf("\n--------------------------------------------\n");
             wait(&forked);
-            printf("\n--------------------------------------------\n");
         }
     } else {
         printf("Child fork failed D:\n");
