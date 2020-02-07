@@ -81,43 +81,21 @@ bool interpreter(char * buffer) {
     } else if (strncmp(curCommand, "cd", 2) == 0) {
         printf("#TODO: changin' directoriez...\n");
     } else {
-        //Break by input symbols
-        char * leftHandSide = strtok(curCommand, "<");
-        char * rightHandSide = strtok(NULL, "<");
-        //toss the rest of the file, as there can only ever be one input file.
-
         u_int32_t cmdAndArgsLen = 0; //This is here to make the thingy happy.
-        char ** cmdAndArgs = stringToTokenArray(leftHandSide, " ", &cmdAndArgsLen);
-        printf("LHS: %s, RHS: %s\n", leftHandSide, rightHandSide);
+        char ** cmdAndArgs = stringToTokenArray(curCommand, " ", &cmdAndArgsLen);
+        char * cmdPath = findFile(cmdAndArgs[0], F_OK);
 
-        if (rightHandSide != NULL) {
-            char * filePath = findFile(strtok(rightHandSide, " "), F_OK);
-            if (filePath != NULL) {
-                if (access(filePath, O_RDONLY) == 0) {
-                    printf("<-- #TODO --> : make pipe thing from input file to called process.");
-                } else {
-                    printf("Can't open %s for reading!!!\n", filePath);
-                }
+        if (cmdPath != NULL) {
+            if (access(cmdPath, X_OK) == 0) {
+                cmdAndArgs[0] = cmdPath;
+                executeImage(cmdPath, cmdAndArgs, __environ);
             } else {
-                printf("Can't find file %s!!!\n", rightHandSide);
+                printf("Cant execute file: %s", cmdPath);
             }
-            free(filePath);
         } else {
-
-            char * cmdPath = findFile(cmdAndArgs[0], F_OK);
-
-            if (cmdPath != NULL) {
-                if (access(cmdPath, X_OK) == 0) {
-                    cmdAndArgs[0] = cmdPath;
-                    executeImage(cmdPath, cmdAndArgs, __environ);
-                } else {
-                    printf("Cant execute file: %s", cmdPath);
-                }
-            } else {
-                printf("Command '%s' cannot be found!!!\n", cmdAndArgs[0]);
-            }
-            free(cmdPath);
+            printf("Command '%s' cannot be found!!!\n", cmdAndArgs[0]);
         }
+        free(cmdPath);
     }
     if (nextCommand != NULL) {
         interpreter(nextCommand);
@@ -227,6 +205,27 @@ int executeImage(char * fileName, char *const argv[], char *const envp[]) {
 
     if (forked >= 0) {
         if (forked == 0) {
+            char ** arg = argv;
+
+            for (u_int32_t i = 0; arg[i] != NULL; i++) {
+                if (strcmp(arg[i], "<") == 0) {
+                    arg[i] = NULL;
+                    int file = open(arg[i + 1], O_RDONLY, 0644);
+                    close(0);
+                    dup(file);
+                } else if (strcmp(arg[i], ">") == 0) {
+                    arg[i] = NULL;
+                    int file = open(arg[i + 1], O_WRONLY | O_CREAT, 0644);
+                    close(1);
+                    dup(file);
+                } else if (strcmp(arg[i], ">>") == 0) {
+                    arg[i] = NULL;
+                    int file = open(arg[i + 1], O_WRONLY | O_CREAT | O_APPEND, 0644);
+                    close(1);
+                    dup(file);
+                }
+            }
+
             int output = execve(fileName, argv, envp);
             exit(output);
         } else {
