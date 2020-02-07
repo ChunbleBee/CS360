@@ -46,6 +46,7 @@ int main (int argc, char *argv[], char *env[]) {
     printf("Current home directory: %s\n", homeDirectory);
     printf("Current working directory: %s\n", workingDirectory);
     printf("\n<------------ Taiya's Terribly Tacky Terminal ------------>\n");
+    printf("       Tacked Together To Trounce The Troq Teacher!\n\n");
     while (true) {
         getInput();
     }
@@ -188,10 +189,20 @@ char ** stringToTokenArray(char * string, char * delim, u_int32_t * tokens) {
     return tokenArray;
 }
 
+/*
+    Shell -> Find command
+        Fork Child
+            if Command doesn't have pipe, execute anyways
+            Else,
+                Fork a Child-Slave, and run the current command
+                In Child-Master, wait for child slave to die, then run the next command after the pipe
+*/
+
 int executeImage(char * fileName, char *const argv[], char *const envp[], char * next) {
     int forked = fork();
 
     if (forked >= 0) {
+        // Child
         if (forked == 0) {
             if (next != NULL) {
                 int pipeFD[2];
@@ -200,12 +211,12 @@ int executeImage(char * fileName, char *const argv[], char *const envp[], char *
                     int forkz = fork();
                     if (forkz >= 0) {
                         if (forkz == 0) {
-                            //Child
+                            //Pipe Child
                             close(1);
                             dup(pipeFD[1]);
                             close(pipeFD[0]);
                         } else {
-                            // parent
+                            //Pipe Parent
                             close(0);
                             dup(pipeFD[0]);
                             close(pipeFD[1]);
@@ -220,6 +231,7 @@ int executeImage(char * fileName, char *const argv[], char *const envp[], char *
                     printf("Failed to create pipe D=");
                 }
             }
+
             char ** arg = argv;
             for (u_int32_t i = 0; arg[i] != NULL; i++) {
                 if (strcmp(arg[i], "<") == 0) {
@@ -234,7 +246,7 @@ int executeImage(char * fileName, char *const argv[], char *const envp[], char *
                     dup(file);
                 } else if (strcmp(arg[i], ">>") == 0) {
                     arg[i] = NULL;
-                    int file = open(arg[i + 1], O_WRONLY | O_CREAT | O_APPEND | O_TRUNC, 0644);
+                    int file = open(arg[i + 1], O_WRONLY | O_CREAT | O_APPEND , 0644);
                     close(1);
                     dup(file);
                 }
