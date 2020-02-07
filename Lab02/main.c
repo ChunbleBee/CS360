@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <stdbool.h>
 #include <sys/types.h>
+#include <sys/wait.h>
 #include <unistd.h>
 #include <string.h>
 #include <fcntl.h>
@@ -49,30 +50,32 @@ void getInput() {
     printf("%s> ", workingDirectory);
     fgets(buffer, BUFFERLEN, stdin);
     buffer[strlen(buffer) - 1] = '\0';
-
+    printf("getInput(), switch to interpreter()\n");
     if (interpreter(buffer)) {
         free(buffer);
     }
 }
 
 bool interpreter(char * buffer) {
+    printf("interpreter()\n");
     u_int32_t length = 0;
     char ** bufferBrokenByPipes = stringToTokenArray(buffer, "|", &length);
     for(int i = 0; i < length; i++) {
-        if (strcmp(bufferBrokenByPipes[i], "exit") == 0) {
+        if (strncmp(bufferBrokenByPipes[i], "exit", 4) == 0) {
+            printf("exiting...\n");
             exit(0);
-        } else if (strncmp(bufferBrokenByPipes[i], "cd", 2)) {
-            //#TODO: add CD function here.
+        } else if (strncmp(bufferBrokenByPipes[i], "cd", 2) == 0) {
+            printf("#TODO: changin' directoriez...\n");
         } else {
             //Now we need to break by input symbols
             char * leftHandSide = strtok(bufferBrokenByPipes[i], "<");
             char * rightHandSide = strtok(NULL, "<");
 
-            u_int32_t cmdAndArgsLen = 0;
+            u_int32_t cmdAndArgsLen = 0; //This is here to make the thingy happy.
             char ** cmdAndArgs = stringToTokenArray(leftHandSide, " ", &cmdAndArgsLen);
 
             //There can only ever be one input file, thus we throw away the 
-            printf("RHS: %s, LHS: &s", rightHandSide, leftHandSide);
+            printf("LHS: %s, RHS: %s\n", leftHandSide, rightHandSide);
             if (rightHandSide != NULL) {
                 char * filePath = findFile(rightHandSide, F_OK);
                 if (filePath != NULL) {
@@ -89,7 +92,8 @@ bool interpreter(char * buffer) {
                 char * cmdPath = findFile(cmdAndArgs[0], F_OK);
                 if (cmdPath != NULL) {
                     if (access(cmdPath, X_OK) == 0) {
-                        executeImage(cmdPath, (&cmdAndArgs[1]), __environ);
+                        cmdAndArgs[0] = cmdPath;
+                        executeImage(cmdPath, cmdAndArgs, __environ);
                     }
                 } else {
                     printf("No such command: %s found!!!\n", cmdPath[0]);
@@ -108,7 +112,7 @@ char * findFile(char * file, int mode) {
 
     while (newPath == NULL && triedPaths < numPaths) {
         newPath = makeNewPath(file, pathTokens[triedPaths]);
-        printf("New cmd path to try: %s", newPath);
+        printf("New cmd path to try: %s\n", newPath);
 
         if (access(newPath, mode) == 0) {
             printf("Found!!\n");
@@ -150,9 +154,7 @@ char * getEnvironmentVariable(char *env[], char * prefix) {
     ) {
         index++;
     }
-    return (env[index] + prefixLength);{
-        printf("Found command - attempting execution");
-    }
+    return (env[index] + prefixLength);
 }
 
 char ** stringToTokenArray(char * string, char * delim, u_int32_t * tokens) {
@@ -185,9 +187,16 @@ char ** stringToTokenArray(char * string, char * delim, u_int32_t * tokens) {
 
 int executeImage(char * fileName, char *const argv[], char *const envp[]) {
     int forked = fork();
-    if (forked == 0) {
-        execve(fileName, argv, envp);
+
+    if (forked >= 0) {
+        if (forked == 0) {
+            printf("Process %u forked child %u, switching tasks.\n\n", getpid(), forked);
+            execve(fileName, argv, envp);
+            printf("\n");
+        } else {
+            wait(&forked);
+        }
     } else {
-        wait();
+        printf("Child fork failed D:\n");
     }
 }
