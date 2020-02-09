@@ -202,21 +202,25 @@ int executeImage(char * fileName, char *const argv[], char *const envp[], char *
     int forked = fork();
 
     if (forked >= 0) {
-        // Child
+        // Fork successful
         if (forked == 0) {
+            // Child process
             if (next != NULL) {
+                // Found pipe
                 int pipeFD[2];
                 int pipez = pipe(pipeFD);
+
                 if (pipez == 0) {
                     int forkz = fork();
                     if (forkz >= 0) {
                         if (forkz == 0) {
-                            //Pipe Child
+                            // Pipe-Slave
                             close(1);
                             dup(pipeFD[1]);
                             close(pipeFD[0]);
+                            //Command
                         } else {
-                            //Pipe Parent
+                            //Pipe-Master
                             close(0);
                             dup(pipeFD[0]);
                             close(pipeFD[1]);
@@ -225,7 +229,7 @@ int executeImage(char * fileName, char *const argv[], char *const envp[], char *
                             exit(0);
                         }
                     } else {
-                        printf("Failed to fork process )= PID%u", getpid());
+                        printf("Failed to fork process D= PID%u", getpid());
                     }
                 } else {
                     printf("Failed to create pipe D=");
