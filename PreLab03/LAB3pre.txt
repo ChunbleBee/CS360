@@ -1,0 +1,48 @@
+                CS360 LAB3 Pre-Work
+	        DUE: 2-13-2020 in class
+	NOTE: text-edit your answers, NO hand writings
+		 
+1. Download files from ~samples/LAB3pre/:
+                                   ||
+                           c4.2.c c4.3.c c4.4.c
+
+                    REQUIREMENTS
+		  
+(1). c4.2.c implements quciksort of an integer array by CONCURRENT THREADS
+
+     Write a SEQUENTIAL quicksort program (for the same integer array).
+
+     Run both c4.2.c AND your sequential quicksort program.
+     Compare the running time of both programs.
+
+		 
+		 
+
+(2). c4.3.c computes the sum of a matrix by CONCURRENT THREADS.
+     Each thread computes the partial sum of a row and tries to update
+     a global total by its partial sum.
+
+(2).1. Explain what's a Critical Region: __________________________
+       How to protect Critial Regions?   __________________________
+		 
+(2).2. In C4.3, each thread must use the same mutex_lock when updating total.
+       WHY?______________________________________________________________
+		 
+(2).3. Write a SEQUENTIAL program to compute the sum of the same matrix.
+       Run both c4.3.c AND your sequential program.
+       Compare the running time of both programs.
+
+		 
+		 
+(3). c4.4.c implements the producer-consumer problem using CONDITION variables.
+	    The program uses a PAIR of producer and consumer threads.
+		 
+(3).1. Explain how condition variables work ________________________________
+		 
+(3).2. Modify the main() function to generate one more producer thread.
+       Analyze the program logic to predict what would happen? _________________
+       Run the modified program to verify YOUR predication: ___________________ 
+
+(3).3. Modify the main() function to generate one more consumer thread.
+       Analyze the program logic to predict what would happen? ________________
+       Run the modified program to verify YOUR predication: ____________________
