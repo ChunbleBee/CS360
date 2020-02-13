@@ -65,11 +65,13 @@ void *consumer()
 
 int main ()
 {
-  pthread_t pro, con;
+  pthread_t pro, pro2, con, con2;
   init();
   printf("main: create producer and consumer threads\n");
   pthread_create(&pro, NULL, producer, NULL);
+  pthread_create(&pro2, NULL, producer, NULL);
   pthread_create(&con, NULL, consumer, NULL);
+  pthread_create(&con2, NULL, consumer, NULL);
   printf("main: join with threads\n");
   pthread_join(pro, NULL);
   pthread_join(con, NULL);

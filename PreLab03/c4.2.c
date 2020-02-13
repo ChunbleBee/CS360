@@ -3,28 +3,19 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <pthread.h>
-#include <sys/time.h>
+#include <time.h>
 
 #include "QuickSortSingleThread.c"
 
-typedef struct{
+typedef struct {
   int upperbound;
   int lowerbound;
-} PARM;  
+} PARM;
 
-#define N 10        
+#define N 5100000
 
-int a[N] = {5,1,6,4,7,2,9,8,0,3};  // unsorted data
-int b[N] = {5,1,6,4,7,2,9,8,0,3};
-
-int print()   // print current a[] contents
-{
-  int i;
-  printf("[ ");
-  for (i=0; i<N; i++)
-    printf("%d ", a[i]);
-  printf("]\n");
-}
+int a[N];  // unsorted data
+int b[N];
 
 void *Qsort(void *aptr)
 {
@@ -48,12 +39,12 @@ void *Qsort(void *aptr)
        pthread_exit(NULL);
 
 
-    while (left < right){         // partition loop
+    while (left < right) {         // partition loop
        do { left++;} while (a[left] < pivot);
 
        do { right--;} while (a[right] > pivot);
 
-       if (left < right ){          
+       if (left < right ) {
           temp = a[left];
           a[left] = a[right];
           a[right] = temp;
@@ -84,42 +75,43 @@ void *Qsort(void *aptr)
 
 int main(int argc, char *argv[])
 {
+    printf("Initializing...\n");
+    srand(time(NULL));
+    for (int i = 0; i < N; i++) {
+      int temp = rand() % 1000;
+      a[i] = temp;
+      b[i] = temp;
+    }
     PARM arg;
     int i, *array;
     pthread_t me, thread;
 
-    struct timeval t1, t2, t3, t4;
-    gettimeofday(&t1, NULL);
+    clock_t begin, end;
+    printf("Init. Complete - Running Sorts on %d inputs.\n\n", N);
 
+    // start threaded quicksort
+    begin = clock();
     me = pthread_self();
-    //printf("main %lu: unsorted array = ", me);
-    //print();
-
     arg.upperbound = N-1;
     arg.lowerbound = 0;
-
-    //printf("main %lu create a thread to do QS\n", me);
     pthread_create(&thread, NULL, Qsort, (void *)&arg);
-
-    // wait for QS thread to finish
     pthread_join(thread, NULL);
-    //printf("main %lu sorted array = ", me);
-    //print();
-    
-    gettimeofday(&t2, NULL);
+    end = clock();
 
     printf("Speed of multi-threaded quicksort: \n");
-    printf("End Time: sec=%ld usec=%ld\n", t2.tv_sec, t2.tv_usec);
-    printf("Start Time: sec=%ld usec=%ld\n", t1.tv_sec, t1.tv_usec);
-    printf("Micro-second execution time: %ld\n", t2.tv_usec - t1.tv_usec);
+    printf("\tStart Time: %lu\n", begin);
+    printf("\tEnd Time: %lu\n", end);
+    printf("\tExecution time: %lu\n\n", (end - begin));
 
-    gettimeofday(&t3, NULL);
+    begin = clock();
     quickSort(b, N);
-    gettimeofday(&t4, NULL);
+    end = clock();
 
-    printf("Speed of single-threaded quick sort: \n");
-    printf("End Time: sec=%ld usec=%ld\n", t4.tv_sec, t4.tv_usec);
-    printf("Start Time: sec=%ld usec=%ld\n", t3.tv_sec, t3.tv_usec);
-    printf("Micro-second execution time: %ld\n", t4.tv_usec - t3.tv_usec);
+    printf("Speed of single-threaded quicksort: \n");
+    printf("\tStart Time: %lu\n", begin);
+    printf("\tEnd Time: %lu\n", end);
+    printf("\tExecution time: %lu\n", (end - begin));
+
+    printf("\nPress enter to exit...");
+    getchar();
 }
-

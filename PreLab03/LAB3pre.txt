@@ -15,7 +15,7 @@
      Run both c4.2.c AND your sequential quicksort program.
      Compare the running time of both programs.
 
-		 
+
 		 
 
 (2). c4.3.c computes the sum of a matrix by CONCURRENT THREADS.
