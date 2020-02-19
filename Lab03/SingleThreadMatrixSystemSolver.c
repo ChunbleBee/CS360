@@ -3,6 +3,7 @@
 #include <stddef.h>
 #include <stdint.h>
 #include <string.h>
+#include <math.h>
 
 // Ax = b
 // Decompose A such that...
@@ -47,16 +48,18 @@ double * matrixSystemSolver(double ** A, double * b, uint32_t length) {
 LUDecomposition * luDecomp(double ** matrix, uint32_t size) {
     LUDecomposition * output = (LUDecomposition *)malloc(sizeof(LUDecomposition));
 
-    //lower and upper matrices setup.
+    //Setup
     double ** upper = calloc(size, sizeof(double *));
     double ** lower = calloc(size, sizeof(double *));
+    double * y      = calloc(size, sizeof(double));
+    uint32_t * perm = calloc(size, sizeof(uint32_t));
 
     for (uint32_t i = 0; i < size; i++) {
         upper[i] = calloc(size, sizeof(double));
         lower[i] = calloc(size, sizeof(double));
         //calloc() zeros out the row, so no need to manually do so.
         lower[i][i] = 1.0;
-        memcpy(upper[i], matrix[i], sizeof(double) * size);
+        perm[i] = i;
     }
 
     output->lower = lower;
@@ -65,25 +68,53 @@ LUDecomposition * luDecomp(double ** matrix, uint32_t size) {
     for (uint32_t i = 0; i < size - 1; i++) {
         printf("pivot: ");
         printRow(upper[i], size);
+        double iVal = upper[i][i];
+
+        for (uint32_t j = i; j < size; j++) {
+            if (upper[j][i] > iVal) {
+                iVal = upper[j][i];
+
+                double * temp = upper[i];
+                upper[i] = upper[j];
+                upper[j] = temp;
+
+                temp = lower[i];
+                lower[i] = lower[j];
+                lower[j] = temp;
+            }
+        }
 
         for (uint32_t j = i + 1; j < size; j++) {
-            double iVal = upper[i][i];
-            if (iVal == 0) {
-                printf("Failure to decompose!");
-                return NULL;
-            }
             double jVal = upper[j][i];
             double kVal = jVal/iVal;
 
             for (uint32_t k = i; k < size; k++) {
                 upper[j][k] -= kVal * upper[i][k];
             }
+
             lower[j][i] = kVal;
             printf("upper: ");
             printRow(upper[j], size);
             printf("lower: ");
             printRow(lower[j], size);
             printf("\n");
+        }
+    }
+
+    for (uint32_t i = 0; i < size; i++) {
+        if (perm[i] != i) {
+            uint32_t j = perm[i];
+            perm[j] = perm[i];
+            perm[i] = j;
+
+            double * temp = upper[i];
+            upper[i] = upper[j];
+            upper[j] = temp;
+
+            temp = lower[i];
+            lower[i] = lower[j];
+            lower[j] = temp;
+            i--;
         }
     }
 
@@ -103,7 +134,7 @@ int main(int argc, char argv[], char envp[]) {
         }
         next -= 1.0;
     }
-    mat[size - 2][size - 2] = 13.0;
+
     printSquareMatrix(mat, size, size);
     printf("\n");
 
