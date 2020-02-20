@@ -4,7 +4,7 @@
 #include <math.h>
 #include <pthread.h>
 
-#define N 4
+#define N 8
 int n;
 
 double A[N][N], L[N][N], U[N][N];
@@ -22,6 +22,7 @@ int print(char c, double x[N][N])
        printf("\n");
    }
 }
+
 int printV(char c, double x[N])
 {
   int i;
@@ -63,7 +64,9 @@ int lu()
     }
 
     // swap P[k] and P[j];
-    itemp = P[k]; P[k] = P[j]; P[j] = itemp;  
+    itemp = P[k];
+    P[k] = P[j];
+    P[j] = itemp; 
 
     // swap row A[k] and row A[j]
     printf("swap row %d and row %d of A\n", k, j);
@@ -71,11 +74,12 @@ int lu()
         temp = A[k][m]; A[k][m] = A[j][m]; A[j][m] = temp;
     }
     print('A', A);
-    getchar();
 
     //swap L[k][0,k-2] and L[j][0,k-2]
     for (m=0; m<k-2; m++){
-        temp = L[k][m]; L[k][m] = L[j][m]; L[j][m] = temp;
+        temp = L[k][m];
+        L[k][m] = L[j][m];
+        L[j][m] = temp;
     }
     
     // compute L U entries
@@ -93,7 +97,6 @@ int lu()
        }
     }
     print('A', A); print('L', L); print('U', U); printP();
-    getchar();
   }
 }
 
@@ -144,7 +147,7 @@ int main(int argc, char *argv[])
   printV('b', b);
     
   // solve L*Y = PB = b
-  for (i = 0; i<n; i++){  // forwar substitution
+  for (i = 0; i<n; i++){  // forward substitution
      Y[i] = b[i];
      for (j=0; j<i; j++){
        Y[i] -= L[i][j]*Y[j];

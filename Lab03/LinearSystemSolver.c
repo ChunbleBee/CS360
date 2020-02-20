@@ -4,7 +4,8 @@
 #include <pthread.h>
 #include <stdint.h>
 
-#define N 4
+#define N 8
+#define THREADS 4
 double A[N][N+1];
 double solution[N+1];
 pthread_barrier_t barrier;
@@ -21,26 +22,28 @@ int printMatrix() {
 }
 
 void * gaussianElimination(void * arg) {
-    uint32_t pivot_row = 0;
-    uint32_t myID = (uint32_t) arg;
+    long myID = (long) arg;
 
-    for (uint32_t i = 0; i < N-1; i++) {
-        if (i == myID) {
+    printf("in GE, thread: %u\n", myID);
+
+    for (long i = 0; i < N-1; i++) {
+        printf("GE, i = %u, thread = %u\n", i, myID);
+        if (i%THREADS == myID) {
             printf("Thread #%u Partial Pivoting Row #%u\n", myID, i);
-            pivot_row = i;
+            long pivot_row = i;
             double localMaxima = 0.0;
 
             //Getting pivot row
-            for (uint32_t j = i; j <= N; j++) {
+            for (long j = i; j <= N; j++) {
                 if (fabs(A[j][i]) > localMaxima) {
                     localMaxima = fabs(A[j][i]); //FLOATING ABSOLUTE
                     pivot_row = j;
                 }
             }
 
-            printf("Pivot Row: %u - Pivot Value: %0.2f\n", pivot_row, A[pivot_row][i]);
+            printf("Pivot Row: %u, Pivot Value: %0.2f\n", pivot_row, A[pivot_row][i]);
             if (pivot_row != i) {
-                for (uint32_t j = i + 1; j < N + 1; j++) {
+                for (long j = i; j < N + 1; j++) {
                     double temp = A[i][j];
                     A[i][j] = A[pivot_row][j];
                     A[pivot_row][j] = temp;
@@ -48,60 +51,66 @@ void * gaussianElimination(void * arg) {
             }
             printf("Pivoted local maxima to local top of the matrix, row: %d\n", i);
 
-            // Create barrier, find the correct row to factorize;
+            // Waiting for all partial pivoting to be done.
             pthread_barrier_wait(&barrier);
-            for (int j = i + 1; j < N; j++) {
-                if (j == myID) {
+
+            // Factorize the rows
+            for (long j = i + 1; j < N; j++) {
+                if (j%THREADS == myID) {
                     double factor = A[j][i]/A[i][i];
                     printf("Thread %u to factorize row %u by factor: %lf.\n", myID, j, factor);
-                    for (uint32_t k = i; k <= N; k++) {
+                    for (long k = i; k <= N; k++) {
                         A[j][k] -= factor * A[i][k];
                     }
+                    A[j][i] = 0.0;
                 }
             }
         }
-        printf("BARRIER\n");
+
+        printf("BARRIER, THREAD #%u\n", myID);
         pthread_barrier_wait(&barrier);
-        if (i == myID) {
+        if (i%THREADS == myID) {
             printMatrix();
         }
+        printf("PAST BARRIER, THREAD #%u\n", myID);
     }
 }
 
 int main(int argc, char * argv[]) {
-    pthread_t threads[N];
+    pthread_t threads[THREADS];
 
     printf("Initialization of matrix...\n");
-    for (uint32_t i=0; i<N; i++) {
-        for (uint32_t j=0; j<N; j++) {
+    for (long i=0; i<N; i++) {
+        for (long j=0; j<N; j++) {
             A[i][j] = 1.0;
         }
     }
-    for (uint32_t i=0; i<N; i++) {
+    for (long i=0; i<N; i++) {
         A[i][N-i-1] = 1.0*N;
     }
-    for (uint32_t i=0; i<N; i++) {
+    for (long i=0; i<N; i++) {
         A[i][N] = 2 * N - 1;
     }
     printMatrix();
 
-    pthread_barrier_init(&barrier, NULL, N);
-    printf("Main, creating %u extrea threads...", N);
-    for (uint32_t i = 0; i < N; i++) {
+    pthread_barrier_init(&barrier, NULL, THREADS);
+
+    printf("Main, creating %u extra threads...\n", THREADS);
+    for (long i = 0; i < THREADS; i++) {
         pthread_create(&threads[i], NULL, gaussianElimination, (void *) i);
     }
     printf("Main, waiting for all working threads to join...\n");
 
-    for (uint32_t i = 0; i < N; i++) {
+    for (long i = 0; i < THREADS; i++) {
         pthread_join(threads[i], NULL);
     }
 
     printf("Main, Back substitution/propogation...\n");
 
-    for (uint32_t i = N - 1; i >= 0; i--) {
+    for (long i = N - 1; i >= 0; i--) {
         double sum = 0.0;
 
-        for (uint32_t j = i + 1; j < N; j++) {
+        for (long j = i + 1; j < N; j++) {
             sum += A[i][j] * A[j][N];
             solution[i] = (A[i][N] - sum)/ A[i][i];
         }
