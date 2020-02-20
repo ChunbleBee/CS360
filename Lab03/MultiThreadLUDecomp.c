@@ -6,7 +6,7 @@
 #include <stdbool.h>
 
 #define N 8
-#define THREADS 4
+#define THREADS N
 
 bool print_messages = true;
 
@@ -77,9 +77,11 @@ void * ludecomp(void * arg) {
 
     for (long i = 0; i < N; i++) {
         if (i % THREADS == id) {
+            printf("Partial Pivoting row %u by thread %u.\n", i, id);
             double local_maxima = 0.0;
             long pivot_row = i;
 
+            printf("Finding local pivot maxima...\n");
             for (long j = i; j < N; j++) {
                 if (fabs(mat[j][i]) > local_maxima) {
                     local_maxima = fabs(mat[j][i]);
@@ -92,7 +94,10 @@ void * ludecomp(void * arg) {
                 return NULL;
             }
 
+            printf("Local pivot maxima: %0.2f\n", local_maxima);
+
             if (pivot_row != i) {
+                printf("Swapping row %u with row %u...\n", i, pivot_row);
                 long swap_index = p[pivot_row];
                 p[pivot_row] = p[i];
                 p[i] = swap_index;
@@ -110,6 +115,7 @@ void * ludecomp(void * arg) {
                 }
             }
         }
+        printf("Thread %u waiting for partial pivoting to complete...\n", id);
         // Wait for partial pivoting to complete...
         pthread_barrier_wait(&barrier);
 
@@ -117,23 +123,26 @@ void * ludecomp(void * arg) {
         up[i][i] = mat[i][i];
         for (long j = i + 1; j < N; j++) {
             if (j%THREADS == id) {
+                printf("Thread %u factoring row %u\n", id, j);
                 low[j][i] = mat[j][i]/up[i][i];
                 up[i][j] = mat[i][j];
             }
         }
 
+        printf("Thread %u waiting for other threads to start row reduction...\n", id);
         //Row reductions
         pthread_barrier_wait(&barrier);
         for (long j = i + 1; j < N; j++) {
             if (j%THREADS == id) {
+                printf("Thread %u reducing row %u\n", id, j);
                 for (long k = 0; k < N; k++) {
                     mat[j][k] -= low[j][i]*up[i][k];
                 }
             }
         }
 
+        printf("Thread %u waiting for other threads to finish row reduction...\n", id);
         pthread_barrier_wait(&barrier);
-
         if (i%THREADS == id &&
             print_messages == true) {
             printMatrix(mat, 'A');
@@ -156,20 +165,25 @@ long main(long argc, char * argv[], char * envp[]) {
     for (long i = 0; i < THREADS; i++) {
         pthread_join(threads[i], NULL);
     }
-
+    printf("Joined!\n");
+    printf("Final products of LU decomposition:\n");
+    printMatrix(low, 'L');
+    printMatrix(up, 'U');
     printIntVector(p, 'P');
 
-    printf("Joined!\n b vector...\nBefore reorder:\n");
+    printf("B vector Before reorder:\n");
     printDoubleVector(b, 'b');
     // Reorganizing the b vector.
     for (long i = 0; i < N; i++) {
-        double temp_val = b[i];
-        b[i] = b[p[i]];
-        b[p[i]] = temp_val;
+        if (p[i] != i) {
+            double temp_val = b[i];
+            b[i] = b[p[i]];
+            b[p[i]] = temp_val;
 
-        long temp_index = p[p[i]];
-        p[p[i]] = p[i];
-        p[i] = temp_index;
+            long temp_index = p[p[i]];
+            p[p[i]] = p[i];
+            p[i] = temp_index;
+        }
     }
     printf("Post: \n");
     printDoubleVector(b, 'b');

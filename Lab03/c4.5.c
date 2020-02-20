@@ -5,7 +5,7 @@
 #include <pthread.h>
 
 #define N 8
-#define THREADS 4
+#define THREADS 2
 double A[N][N+1];
 pthread_barrier_t barrier;
 
